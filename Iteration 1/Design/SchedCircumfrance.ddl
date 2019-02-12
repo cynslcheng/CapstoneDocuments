@@ -49,6 +49,8 @@ CREATE TABLE resources (
   id            int IDENTITY NOT NULL, 
   resource_type int NOT NULL, 
   work_area_id  int NOT NULL, 
+  created_at    timestamp NOT NULL, 
+  modified_at   timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE job (
   id                     int IDENTITY NOT NULL, 
@@ -56,6 +58,8 @@ CREATE TABLE job (
   status_id              int NOT NULL, 
   estimated_time_minutes int NOT NULL, 
   work_order_id          int NOT NULL, 
+  created_at             timestamp NOT NULL, 
+  modified_at            timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE technician (
   id              int IDENTITY NOT NULL, 
@@ -68,6 +72,8 @@ CREATE TABLE technician (
   province        varchar(60) NULL, 
   work_area_id    int NOT NULL, 
   license_number  varchar(255) NULL, 
+  created_at      timestamp NOT NULL, 
+  modified_at     timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE work_order (
   id                     int IDENTITY NOT NULL, 
@@ -79,6 +85,8 @@ CREATE TABLE work_order (
   address                varchar(255) NULL, 
   postal_code            varchar(8) NULL, 
   estimated_time_minutes int NOT NULL, 
+  created_at             timestamp NOT NULL, 
+  modified_at            timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE skill (
   id          int IDENTITY NOT NULL, 
@@ -89,6 +97,8 @@ CREATE TABLE job_types (
   id          int IDENTITY NOT NULL, 
   name        varchar(100) NOT NULL, 
   description varchar(255) NULL, 
+  created_at  timestamp NOT NULL, 
+  modified_at timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE work_area (
   id          int IDENTITY NOT NULL, 
@@ -96,27 +106,38 @@ CREATE TABLE work_area (
   country     varchar(50) NOT NULL, 
   region      varchar(75) NOT NULL, 
   description varchar(255) NULL, 
+  created_at  timestamp NOT NULL, 
+  modified_at timestamp NOT NULL, 
   CONSTRAINT pk_work_area_id 
     PRIMARY KEY (id));
 CREATE TABLE resource_type (
   id          int IDENTITY NOT NULL, 
   name        varchar(50) NOT NULL, 
   description varchar(255) NULL, 
+  created_at  timestamp NOT NULL, 
+  modified_at timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE technician_type (
   id          int IDENTITY NOT NULL, 
   name        varchar(100) NOT NULL, 
   description varchar(255) NULL, 
+  created_at  timestamp NOT NULL, 
+  modified_at timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE status (
   id          int IDENTITY NOT NULL, 
   name        varchar(25) NOT NULL, 
   description varchar(255) NULL, 
+  created_at  timestamp NOT NULL, 
+  modified_at timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE technician_skills (
   technician_id int NOT NULL, 
   skills_id     int NOT NULL, 
   skill_rating  int NULL, 
+  expires_at    timestamp NULL, 
+  created_at    timestamp NOT NULL, 
+  modified_at   timestamp NOT NULL, 
   PRIMARY KEY (technician_id, 
   skills_id));
 CREATE TABLE job_types_resource_type (
@@ -142,6 +163,10 @@ CREATE TABLE technician_type_skill (
 CREATE TABLE crew (
   id           int IDENTITY NOT NULL, 
   work_area_id int NOT NULL, 
+  start_time   timestamp NOT NULL, 
+  end_time     timestamp NOT NULL, 
+  created_at   timestamp NOT NULL, 
+  modified_at  timestamp NOT NULL, 
   PRIMARY KEY (id));
 CREATE TABLE crew_technician (
   crewid       int NOT NULL, 
@@ -154,11 +179,13 @@ CREATE TABLE crew_resources (
   PRIMARY KEY (resourcesid, 
   crewid));
 CREATE TABLE job_crew (
-  jobid      int NOT NULL, 
-  crewid     int NOT NULL, 
-  start_time timestamp NOT NULL, 
-  end_time   timestamp NULL, 
-  status_id  int NOT NULL, 
+  jobid       int NOT NULL, 
+  crewid      int NOT NULL, 
+  start_time  timestamp NOT NULL, 
+  end_time    timestamp NULL, 
+  status_id   int NOT NULL, 
+  created_at  timestamp NOT NULL, 
+  modified_at timestamp NOT NULL, 
   PRIMARY KEY (jobid, 
   crewid));
 ALTER TABLE job ADD CONSTRAINT FKjob58212 FOREIGN KEY (work_order_id) REFERENCES work_order (id);
@@ -190,12 +217,12 @@ ALTER TABLE job_crew ADD CONSTRAINT FKjob_crew209421 FOREIGN KEY (crewid) REFERE
 ALTER TABLE job_crew ADD CONSTRAINT FKjob_crew261667 FOREIGN KEY (status_id) REFERENCES status (id);
 ALTER TABLE crew ADD CONSTRAINT FKcrew154869 FOREIGN KEY (work_area_id) REFERENCES work_area (id);
 SET IDENTITY_INSERT work_area ON;
-INSERT INTO work_area(id, province, country, region, description) VALUES (1, 'on', 'canada', 'waterloo', null);
+INSERT INTO work_area(id, province, country, region, description, created_at, modified_at) VALUES (1, 'on', 'canada', 'waterloo', null, null, null);
 SET IDENTITY_INSERT work_area OFF;
 SET IDENTITY_INSERT status ON;
-INSERT INTO status(id, name, description) VALUES (1, 'wsched', 'waiting to be scheduled');
-INSERT INTO status(id, name, description) VALUES (2, 'dispatched', 'dispatched job');
+INSERT INTO status(id, name, description, created_at, modified_at) VALUES (1, 'wsched', 'waiting to be scheduled', null, null);
+INSERT INTO status(id, name, description, created_at, modified_at) VALUES (2, 'dispatched', 'dispatched job', null, null);
 SET IDENTITY_INSERT status OFF;
 SET IDENTITY_INSERT work_order ON;
-INSERT INTO work_order(id, minimum_start_time, maximum_start_time, priority, work_area_id, status_id, address, postal_code, estimated_time_minutes) VALUES (1, 2019/01/01 20:20:20, 2020/01/01 21:21:21, 4, 1, 1, '3 black rd', '0k 1m0', 2);
+INSERT INTO work_order(id, minimum_start_time, maximum_start_time, priority, work_area_id, status_id, address, postal_code, estimated_time_minutes, created_at, modified_at) VALUES (1, 2019/01/01 20:20:20, 2020/01/01 21:21:21, 4, 1, 1, '3 black rd', '0k 1m0', 2, null, null);
 SET IDENTITY_INSERT work_order OFF;
