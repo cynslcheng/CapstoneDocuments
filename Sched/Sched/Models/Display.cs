@@ -1,91 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 
 namespace Sched.Models
 {
+
     public class Display
     {
-        partial class WorkOrder
+        public IEnumerable<WorkOrder> workOrder
         {
-            private int id { get; }
-            private DateTime minStartTime { get; }
-            private DateTime maxStartTime { get; }
-            private int workAreaId { get; }
-            private List<int> jobIds { get; }
-
+            get; set;
 
         }
-        partial class Job
+        public IEnumerable<Job> job
         {
-            private int id { get; }
-            private int jobType { get; }
-            private int workOrderId { get; }
+            get; set;
         }
-        partial class JobCrew
+        public IEnumerable<JobCrew> jobCrew
         {
-            private int id { get; }
-            private DateTime startTime { get; }
-            private DateTime endTime { get; }
-            private int statusId { get; }
+            get; set;
         }
-        partial class WorkArea
+        public IEnumerable<WorkArea> workArea
         {
-            private int id { get; }
-            private string province { get; }
-            private string country { get; }
-            private string region { get; }
-            private string description { get; }
+            get; set;
         }
-        partial class JobTypes
+        public IEnumerable<JobTypes> jobTypes
         {
-            private int id { get; }
-            private string name { get; }
-            private string description { get; }
+            get; set;
         }
-        partial class ResourceTypes
+        public IEnumerable<ResourceTypes> resourceTypes
         {
-            private int id { get; }
-            private string name { get; }
-            private string description { get; }
+            get; set;
         }
-        partial class Skill
+        public IEnumerable<Skill> skills
         {
-            private int id { get; }
-            private string name { get; }
-            private string description { get; }
+            get; set;
         }
-        partial class TechnicianTypes
+        public IEnumerable<TechnicianTypes> technicianTypes
         {
-            private int id { get; }
-            private string name { get; }
-            private string description { get; }
+            get; set;
         }
-        partial class TechnicianSkills
+        public IEnumerable<TechnicianSkills> technicianSkills
         {
-            private int technicianId { get; }
-            private int skillId { get; }
-            private int skillRating { get; }
+            get; set;
         }
-        partial class Technician
+        public IEnumerable<Technician> technicians
         {
-            private int id { get; }
-            private int technicianTypeId { get; }
-            private string firstName { get; }
-            private string lastName { get; }
-            private string address { get; }
-            private string postalCode { get; }
-            private string city { get; }
-            private string province { get; }
-            private int workAreaId { get; }
-            private string liscenceNumber { get; }
+            get; set;
         }
-        partial class Resources
-        {
-            private int id { get; }
-            private int resourceTypeId{ get; } 
 
+        public IEnumerable<Resources> resources {
+            get; set;
         }
+
+
     }
 }

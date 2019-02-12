@@ -1,34 +1,55 @@
-﻿using System.Data.Entity;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
+using System.Web;
 
 namespace Sched.Models
 {
-    // You can add profile data for the user by adding more properties to your ApplicationUser class, please visit http://go.microsoft.com/fwlink/?LinkID=317594 to learn more.
-    public class ApplicationUser : IdentityUser
+    public class SchedContext : DbContext
     {
-        public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
-        {
-            // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType
-            var userIdentity = await manager.CreateIdentityAsync(this, DefaultAuthenticationTypes.ApplicationCookie);
-            // Add custom user claims here
-            return userIdentity;
-        }
-    }
+        // You can add custom code to this file. Changes will not be overwritten.
+        // 
+        // If you want Entity Framework to drop and regenerate your database
+        // automatically whenever you change your model schema, please use data migrations.
+        // For more information refer to the documentation:
+        // http://msdn.microsoft.com/en-us/data/jj591621.aspx
 
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
-    {
-        public ApplicationDbContext()
-            : base("DefaultConnection", throwIfV1Schema: false)
+        public SchedContext() : base("name=SchedContext")
         {
-
         }
 
-        public static ApplicationDbContext Create()
+        public System.Data.Entity.DbSet<Sched.Models.WorkOrder> WorkOrder { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.WorkArea> workArea { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.TechnicianTypes> technicianTypes { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.TechnicianSkills> technicianSkills { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.Technician> technician { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.Skill> skill { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.ResourceTypes> resourcesTypes { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.Resources> resources { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.JobTypes> jobTypes { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.JobCrew> jobCrew { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.Job> job { get; set; }
+
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            return new ApplicationDbContext();
+
+            //Map entity to table
+            Database.SetInitializer<SchedContext>(null);
+            modelBuilder.Entity<Sched.Models.Job>().ToTable("job");
+            modelBuilder.Entity<Sched.Models.JobCrew>().ToTable("job_crew");
+            modelBuilder.Entity<Sched.Models.JobTypes>().ToTable("job_types");
+            modelBuilder.Entity<Sched.Models.Resources>().ToTable("resouces");
+            modelBuilder.Entity<Sched.Models.ResourceTypes>().ToTable("resource_type");
+            modelBuilder.Entity<Sched.Models.Skill>().ToTable("skill");
+            modelBuilder.Entity<Sched.Models.Technician>().ToTable("technician");
+            modelBuilder.Entity<Sched.Models.TechnicianSkills>().ToTable("technicianSkills");
+            modelBuilder.Entity<Sched.Models.TechnicianTypes>().ToTable("techNician_type");
+            modelBuilder.Entity<Sched.Models.WorkArea>().ToTable("work_area");
+            modelBuilder.Entity<Sched.Models.WorkOrder>().ToTable("work_order");
+           
+
         }
     }
 }
