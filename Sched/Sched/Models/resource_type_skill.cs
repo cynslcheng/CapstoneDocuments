@@ -6,11 +6,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Sched.Models
 {
-    public class ResourceTypes
+    public class resource_type_skill
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-        private string name { get; }
-        private string description { get; }
+        [Key, Column(Order = 1)]
+        public int resouce_typeid { get; set; }
+        [Key, Column(Order = 2)]
+        public int skillid { get; set; }
     }
 }

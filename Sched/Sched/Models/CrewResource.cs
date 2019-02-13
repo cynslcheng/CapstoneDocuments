@@ -4,13 +4,14 @@ using System.Linq;
 using System.Web;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Sched.Models
 {
-    public class ResourceTypes
+    public class CrewResource
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-        private string name { get; }
-        private string description { get; }
+        [Key, Column(Order = 1)]
+        public int resourceid { get; set; }
+        [Key, Column(Order = 2)]
+        public int crewID { get; set; }
     }
 }
