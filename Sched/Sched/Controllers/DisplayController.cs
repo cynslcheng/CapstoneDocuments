@@ -15,11 +15,18 @@ namespace Sched.Controllers
         public ActionResult Index()
         {
 
-          //  ViewBag.Test = "Hello";
-            
-           // validateWorkOrder(DateTime.Now, maxDay, 1, 1, 7, 34, "111 test ave", "n2n 1n1", 30);
-         //  WorkOrder workOrder = dbContext.WorkOrder.FirstOrDefault();
-            
+            //  ViewBag.Test = "Hello";
+            DateTime maximum = DateTime.Now;
+            DateTime minimum = DateTime.Now;
+            maximum = maximum.AddDays(1);
+            WorkOrder workorder = dbContext.WorkOrder.Where(x => x.Id == 22).First();
+           // AssignResource(22, 2, minimum);
+            //AssignTechnician(22, 1, minimum);
+            // validateWorkOrder(DateTime.Now, maxDay, 1, 1, 7, 34, "111 test ave", "n2n 1n1", 30);
+            //  WorkOrder workOrder = dbContext.WorkOrder.FirstOrDefault();
+            //updateWorkOrder(16, minimum, maximum, 1, 3, 8, 34, "123 nowhere", "n3r 1k4", 70);
+          //  CreateWorkOrder(minimum, maximum, 1, 2, 7, 34, "123 test Street", "n3r 1k4", 70);
+            //Book(workorder);
             return View();
         }
         /// <summary>
@@ -48,10 +55,13 @@ namespace Sched.Controllers
         /// <returns></returns>
         public ActionResult SelectWorkOrder(WorkOrder workOrder)
         {
+
+            //THIS IS WHERE THOMAS'S CONTROL EVENT SHOULD LEAD TO****************
+
             Session["SelectedWorkOrder"] = workOrder;
             return View("index");
         }
-        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, int priority,int jobType,int workArea, int status,string address,string postalCode,int estimatedTime)
+        public void CreateWorkOrder(DateTime minimum, DateTime maximum, int priority,int jobType,int workArea, int status,string address,string postalCode,int estimatedTime)
         {
             //use model binding https://www.completecsharptutorial.com/mvc-articles/4-ways-to-collect-form-data-in-controller-class-in-asp-net-mvc-5.php
             //if (ValidateWorkOrder(workOrder))
@@ -61,6 +71,7 @@ namespace Sched.Controllers
                 Job job = new Job();
                 job.job_type_id = jobType;
                 job.created_At = DateTime.Now;
+                job.estimated_time_minutes = estimatedTime;
                 WorkOrder workOrder = new WorkOrder();              
                 workOrder.maximum_start_time = maximum;
                 workOrder.minimum_start_time = minimum;
@@ -68,7 +79,8 @@ namespace Sched.Controllers
                 workOrder.priority = priority;
                 workOrder.work_area_id = workArea;
                 workOrder.status_id = status;
-                
+                workOrder.address = address;
+                workOrder.postal_code = postalCode;
                 //validateWorkOrder()
                 
                 dbContext.WorkOrder.Add(workOrder);
@@ -81,9 +93,9 @@ namespace Sched.Controllers
                 //this will work when constraints on database are changed
                 Session["NewWorkOrder"] = null;
                 dbContext.SaveChanges();
-                
+                ViewBag.SuccessCreate = "Work order Created";
             }
-            return View("index");
+           // return View("index");
             //        ViewBag.WorkOrder = workOrder;
             
         }
@@ -97,8 +109,12 @@ namespace Sched.Controllers
                 workOrder.maximum_start_time = maximum;
                 workOrder.priority = priority;
                 workOrder.work_area_id = workArea;
+                workOrder.address = address;
+                workOrder.postal_code = postalCode;
                 workOrder.estimated_time_minutes = estimatedTime;
                 dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                dbContext.SaveChanges();
+                ViewBag.UpdateSuccess = "Work order updated!";
             }
             else
             {
@@ -128,6 +144,11 @@ namespace Sched.Controllers
           else  if(minimum.Date<DateTime.Now.Date)
             {
                 ViewBag.WorkOrderError += "Invalid Dates<br/>";
+                return false;
+            }
+            if(address=="")
+            {
+                ViewBag.WorkOrderError += "Invalid Address<br/>";
                 return false;
             }
             if(regex.IsMatch(postalCode.Trim())== false)
@@ -166,63 +187,75 @@ namespace Sched.Controllers
         //    return false;
         //}
         ////
-        public ActionResult AssignResource(int workOrderId, int resouceId,DateTime startTime)
+        public void AssignResource(int workOrderId, int resouceId,DateTime startTime)
         {
             //when the list of workorders is up and running 
             //dbContext.crewTechnician()
             //check jobcrew
             //this should change work order to bap when successful
-            WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.work_area_id == workOrderId).First();
+
+            //INSERT CALL TO CYNTHIA VALIDATION******
+
+            WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             Job job = dbContext.job.Where(x => x.work_order_id == workOrderId).First();
-            if (dbContext.jobCrew.Where(x=>x.jobId==job.Id).Count()==0)
+            try
             {
+                if (dbContext.jobCrew.Where(x => x.jobId == job.Id).Count() != 0)
+                {
+                    JobCrew jobCrew = dbContext.jobCrew.Where(x => x.jobId == job.Id).First();
 
-                //check if crews exist for this job
-                Crew crew = new Crew();
-                crew.work_area_id = workOrder.work_area_id;
-                crew.start_Time = startTime;
-                crew.end_Time = startTime.AddMinutes(job.estimated_time_minutes);
-                //crew.work_area_id
-                crew.created_at = DateTime.Now;
-                dbContext.crew.Add(crew);
-                dbContext.SaveChanges();
+                    //jobCrew.jobId
+                    Crew crew = dbContext.crew.Where(x => x.Id == jobCrew.crewId).First();
+                    CrewResource cR = new CrewResource();
+                    cR.crewID = crew.Id;
+                    cR.resourcesid = resouceId;
+                    dbContext.crew_resources.Add(cR);
+                    workOrder.status_id = 36;
+                    dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                    dbContext.SaveChanges();
+                }
+                else
+                {
 
-                JobCrew jobCrew = new JobCrew();
-                jobCrew.jobId = job.Id;
-                jobCrew.crewId = dbContext.crew.OrderByDescending(x => x.Id).FirstOrDefault().Id;
-                jobCrew.created_at = DateTime.Now;
-                jobCrew.startTime = startTime;
-                jobCrew.endTime = startTime.AddMinutes(job.estimated_time_minutes);
-                jobCrew.statusId = workOrder.status_id;
-                dbContext.jobCrew.Add(jobCrew);
-                dbContext.SaveChanges();
+                    //check if crews exist for this job
+                    Crew crew = new Crew();
+                    crew.work_area_id = workOrder.work_area_id;
+                    crew.start_Time = startTime;
+                    crew.end_Time = startTime.AddMinutes(job.estimated_time_minutes);
+                    //crew.work_area_id
+                    crew.created_at = DateTime.Now;
+                    dbContext.crew.Add(crew);
+                    dbContext.SaveChanges();
 
-                CrewResource crewResource = new CrewResource();
-                crewResource.resourceid = resouceId;
-                crewResource.crewID = jobCrew.crewId;
-                dbContext.crew_resources.Add(crewResource);
-                dbContext.SaveChanges();
+                    JobCrew jobCrew = new JobCrew();
+                    jobCrew.jobId = job.Id;
+                    jobCrew.crewId = dbContext.crew.OrderByDescending(x => x.Id).FirstOrDefault().Id;
+                    jobCrew.created_at = DateTime.Now;
+                    jobCrew.start_time = startTime;
+                    jobCrew.end_time = startTime.AddMinutes(job.estimated_time_minutes);
+                    jobCrew.status_id = workOrder.status_id;
+                    dbContext.jobCrew.Add(jobCrew);
+                    dbContext.SaveChanges();
 
-                workOrder.status_id = 36;
+                    CrewResource crewResource = new CrewResource();
+                    crewResource.resourcesid = resouceId;
+                    crewResource.crewID = jobCrew.crewId;
+                    dbContext.crew_resources.Add(crewResource);
+
+
+                    workOrder.status_id = 36;
+                    dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                    dbContext.SaveChanges();
+                }
 
             }
-            else
+            catch (Exception e)
             {
-                //crew for whole day?
 
-                JobCrew jobCrew = dbContext.jobCrew.Where(x => x.jobId == job.Id).First();
-
-                //jobCrew.jobId
-                Crew crew = dbContext.crew.Where(x => x.Id == jobCrew.crewId).First();
-                CrewResource cR = new CrewResource();
-                cR.crewID = crew.Id;
-                cR.resourceid = resouceId;
-                dbContext.crew_resources.Add(cR);
-                dbContext.SaveChanges();
-                //find job crew
-                //
+                ViewBag.Error = e.Message;
             }
-            return View("Index");
+            
+          //  return View("Index");
         }
 
         public ActionResult AssignTechnician(int workOrderId, int technicianId, DateTime startTime)
@@ -231,9 +264,35 @@ namespace Sched.Controllers
             //dbContext.crewTechnician()
             //check jobcrew
             //this should change work order to bap when successful
-            WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.work_area_id == workOrderId).First();
+
+            //INSERT CALL TO CYNTHIA VALIDATION
+
+            WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             Job job = dbContext.job.Where(x => x.work_order_id == workOrderId).First();
-            if (dbContext.jobCrew.Where(x => x.jobId == job.Id).Count() == 0)
+            if (dbContext.jobCrew.Where(x => x.jobId == job.Id).Count() != 0)
+            {
+                try
+                {
+                    JobCrew jobCrew = dbContext.jobCrew.Where(x => x.jobId == job.Id).First();
+
+                    //jobCrew.jobId
+                    Crew crew = dbContext.crew.Where(x => x.Id == jobCrew.crewId).First();
+                    crewTechnician cT = new crewTechnician();
+                    cT.crewid = crew.Id;
+                    cT.technicianid = technicianId;
+                    dbContext.crewTechnician.Add(cT);
+                    workOrder.status_id = 36;
+                    dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                    dbContext.SaveChanges();
+                }
+                catch (Exception e)
+                {
+
+                    ViewBag.Error = "SQL Server error: " + e.Message;
+                }
+                
+            }
+            else
             {
 
                 //check if crews exist for this job
@@ -250,37 +309,23 @@ namespace Sched.Controllers
                 jobCrew.jobId = job.Id;
                 jobCrew.crewId = dbContext.crew.OrderByDescending(x => x.Id).FirstOrDefault().Id;
                 jobCrew.created_at = DateTime.Now;
-                jobCrew.startTime = startTime;
-                jobCrew.endTime = startTime.AddMinutes(job.estimated_time_minutes);
-                jobCrew.statusId = workOrder.status_id;
+                jobCrew.start_time = startTime;
+                jobCrew.end_time = startTime.AddMinutes(job.estimated_time_minutes);
+                jobCrew.status_id = workOrder.status_id;
                 dbContext.jobCrew.Add(jobCrew);
                 dbContext.SaveChanges();
 
                 crewTechnician cT = new crewTechnician();
-                cT.technicanid = technicianId;
+                cT.technicianid = technicianId;
                 cT.crewid = jobCrew.crewId;
                 dbContext.crewTechnician.Add(cT);
-                dbContext.SaveChanges();
-
                 workOrder.status_id = 36;
-
-            }
-            else
-            {
-                //crew for whole day?
-
-                JobCrew jobCrew = dbContext.jobCrew.Where(x => x.jobId == job.Id).First();
-
-                //jobCrew.jobId
-                Crew crew = dbContext.crew.Where(x => x.Id == jobCrew.crewId).First();
-                crewTechnician cT = new crewTechnician();
-                cT.crewid = crew.Id;
-                cT.technicanid = technicianId;
-                dbContext.crewTechnician.Add(cT);
                 dbContext.SaveChanges();
-                //find job crew
-                //
+
+                
+
             }
+           
             return View("Index");
         }
 
@@ -296,68 +341,75 @@ namespace Sched.Controllers
             IEnumerable < Job > jobs = dbContext.job.Where(x => x.work_order_id == workOrder.Id);
             bool check = true;
             bool checkResource = true;
-            foreach (Job job in jobs)
+            Job job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First();
+            var query = (from technican in dbContext.technician
+                         join crewTechnician in dbContext.crewTechnician on technican.Id equals crewTechnician.technicianid
+                         join jobCrew in dbContext.jobCrew on crewTechnician.crewid equals jobCrew.crewId
+
+                         where jobCrew.jobId == job.Id
+                         select new { technican.technician_type }).ToArray();
+           
+           
+
+            JobTypesTechnicianType[] requiredTechnicianTypes = dbContext.job_types_technician_type.Where(x => x.job_types_id == job.job_type_id).ToArray();
+            ;
+            for (int i = 0; i < query.Length; i++)
             {
-                
-                // JobCrew jobCrew = dbContext.jobCrew.Where(x => x.jobId == job.Id).FirstOrDefault();
-
-
-                var query =(from technican in dbContext.technician
-                            join crewTechnician in dbContext.crewTechnician on technican.Id equals crewTechnician.technicanid
-                            join jobCrew in dbContext.jobCrew on crewTechnician.crewid equals jobCrew.crewId
-
-                            where jobCrew.jobId == job.Id
-                            select new  { technican.technicianTypeId }).ToArray();
-                
-                JobTypesTechnicianType[] requiredTechnicianTypes = dbContext.job_types_technician_type.Where(x => x.jobTypeID == job.job_type_id).ToArray();
-                ;
-                for (int i = 0; i < query.Length; i++)
+                if (requiredTechnicianTypes[i].technician_type_id.ToString() != query[i].ToString())
                 {
-                    if (requiredTechnicianTypes[i].technicianTypeID.ToString() != query[i].ToString())
-                    {
-                        check = false;
-                        break;
-                    }
-                }
-                if (check == false)
-                {
-                    ViewBag.Error = "Insufficient Technicians scheduled<br/>";
+                    check = false;
                     break;
                 }
-
-
-
-                var queryResources = (from resources in dbContext.resources
-                             join CrewResource in dbContext.crewTechnician on resources.Id equals CrewResource.technicanid
-                             join jobCrew in dbContext.jobCrew on CrewResource.crewid equals jobCrew.crewId
-                             where jobCrew.jobId == job.Id
-                             select new { resources.resource }).ToArray();
-
-                JobTypesResourceType[] requiredResourceTypes = dbContext.job_types_resource_type.Where(x => x.jobTypeID == job.job_type_id).ToArray();
-                
-                for (int i = 0; i < query.Length; i++)
-                {
-                    if (requiredResourceTypes[i].resourceTypeId.ToString() != query[i].ToString())
-                    {
-                        checkResource = false;
-                        break;
-                    }
-                }
-                if (checkResource == false)
-                {
-                    ViewBag.Error += "Insufficient Resources scheduled";
-                    break;
-                }
+            }
+            if (check == false)
+            {
+                ViewBag.Error = "Insufficient Technicians scheduled<br/>";
                
             }
-            if (check && checkResource)
+
+
+
+            var queryResources = (from resources in dbContext.resources
+                                  join CrewResource in dbContext.crewTechnician on resources.Id equals CrewResource.technicianid
+                                  join jobCrew in dbContext.jobCrew on CrewResource.crewid equals jobCrew.crewId
+                                  where jobCrew.jobId == job.Id
+                                  select new { resources.resource_type }).ToArray();
+
+            JobTypesResourceType[] requiredResourceTypes = dbContext.job_types_resource_type.Where(x => x.job_types_id == job.job_type_id).ToArray();
+
+            for (int i = 0; i < query.Length; i++)
+            {
+                if (requiredResourceTypes.Count()!=queryResources.Count())
+                {
+                    checkResource = false;
+                    break;
+                }
+                if (requiredResourceTypes[i].resource_type_id.ToString() != queryResources[i].ToString())
+                {
+                    checkResource = false;
+                    break;
+                }
+            }
+            if (checkResource == false)
+            {
+                ViewBag.Error += "Insufficient Resources scheduled";
+               
+            }
+
+            //foreach (Job job in jobs)
+            //{
+
+            //    // JobCrew jobCrew = dbContext.jobCrew.Where(x => x.jobId == job.Id).FirstOrDefault();
+
+
+            //}
+            if (ViewBag.Error=="")
             {
                 int updateStatus = dbContext.status.Where(x => x.name == "DIS").FirstOrDefault().Id;
-                foreach (Job job in jobs)
-                {
+                
                     var crews = dbContext.jobCrew.Where(x => x.jobId == job.Id).ToList();
-                    crews.ForEach(x => x.statusId = updateStatus);
-                }
+                    crews.ForEach(x => x.status_id = updateStatus);
+                
                 var jobList= jobs.ToList();
                 jobList.ForEach(x => x.status_id = updateStatus);
                 workOrder.status_id = updateStatus;
@@ -366,7 +418,7 @@ namespace Sched.Controllers
             }
             //figure out how to check if a job has technician that meets the requirements
             //update the status of the work order
-            return View("index");
+           return View("index");
         }
 
        

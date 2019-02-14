@@ -14,7 +14,7 @@ namespace Sched.Models
         public DateTime start_Time { get; set; }
         public DateTime end_Time { get; set; }
         public DateTime created_at{ get; set; }
-        public DateTime modified_at { get; set; }
+        public byte[] modified_at { get; set; }
 
     }
 }
