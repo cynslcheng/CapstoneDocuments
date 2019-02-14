@@ -8,12 +8,14 @@ namespace Sched.Models
 {
     public class JobCrew
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-        public DateTime startTime { get; }
-        public DateTime endTime { get; }
-        public int statusId { get; }
+        [Key, Column(Order = 1)]
+        public int jobId { get; set; }
+        [Key, Column(Order = 2)]
+        public int crewId { get; set; }
+        public DateTime start_time { get; set; }
+        public DateTime end_time { get; set; }
+        public int status_id { get; set; }
         public DateTime created_at { get; set; }
-        public DateTime modified_at { get; set; }
+        public byte[] modified_at { get; set; }
     }
 }

@@ -11,6 +11,6 @@ namespace Sched.Models
         [Key, Column(Order = 1)]
         public int  crewid{ get; set; }
         [Key, Column(Order = 2)]
-        public int technicanid { get; set; }
+        public int technicianid { get; set; }
     }
 }

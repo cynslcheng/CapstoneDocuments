@@ -10,14 +10,14 @@ namespace Sched.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public int technicianTypeId { get; }
-        public string firstName { get; }
-        public string lastName { get; }
-        private string address { get; }
-        private string postalCode { get; }
-        private string city { get; }
-        private string province { get; }
-        public int workAreaId { get; }
-        private string liscenceNumber { get; }
+        public int technician_type { get; set; }
+        public string firstName { get; set; }
+        public string lastName { get; set; }
+        public string address { get; set; }
+        public string postalCode { get; set; }
+        public string city { get; set; }
+        public string province { get; set; }
+        public int workAreaId { get; set; }
+        public string liscenceNumber { get; set; }
     }
 }
