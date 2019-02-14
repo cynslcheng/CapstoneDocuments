@@ -11,7 +11,9 @@ namespace Sched.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        private int resourceTypeId { get; }
+        public int resource_type { get; set; }
+        public int work_area_id { get; set; }
+        public DateTime modified_at { get; set; }
 
     }
 }

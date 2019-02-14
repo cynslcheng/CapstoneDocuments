@@ -17,6 +17,7 @@ namespace Sched.Models
 
         public SchedContext() : base("name=SchedContext")
         {
+
         }
 
         public System.Data.Entity.DbSet<Sched.Models.WorkOrder> WorkOrder { get; set; }
@@ -33,6 +34,8 @@ namespace Sched.Models
         public System.Data.Entity.DbSet<Sched.Models.JobCrew> jobCrew { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.Job> job { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.Crew> crew { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.crewTechnician> crewTechnician { get; set; }
+
         public System.Data.Entity.DbSet<Sched.Models.CrewResource> crew_resources { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.JobTypesResourceType> job_types_resource_type { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.JobTypesTechnicianType> job_types_technician_type { get; set; }
@@ -55,7 +58,7 @@ namespace Sched.Models
             modelBuilder.Entity<Sched.Models.JobTypes>().ToTable("job_types");
             modelBuilder.Entity<Sched.Models.JobTypesResourceType>().ToTable("job_types_resource_type");
             modelBuilder.Entity<Sched.Models.JobTypesTechnicianType>().ToTable("job_types_technician_type");
-            modelBuilder.Entity<Sched.Models.Resources>().ToTable("resouces");
+            modelBuilder.Entity<Sched.Models.Resources>().ToTable("resources");
             modelBuilder.Entity<Sched.Models.ResourceTypes>().ToTable("resource_type");
             modelBuilder.Entity<Sched.Models.resource_type_skill>().ToTable("resource_type_skill");
 

@@ -10,8 +10,8 @@ namespace Sched.Models
     public class JobTypesTechnicianType
     {
         [Key, Column(Order = 1)]
-        public int jobTypeID { get; set; }
+        public int job_types_id { get; set; }
         [Key, Column(Order = 2)]
-        public int technicianTypeID { get; set; }
+        public int technician_type_id { get; set; }
     }
 }
