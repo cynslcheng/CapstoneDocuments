@@ -20,7 +20,7 @@ namespace Sched.Models
         
         public int estimated_time_minutes { get; set; }
         public DateTime created_at { get; set; }
-        public DateTime modified_at { get; set; }
+        public Byte[] modified_at { get; set; }
 
     }
 }
