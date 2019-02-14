@@ -4,8 +4,336 @@
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
-<form>
-    
-    
-</form>
+@*<style>
+    .like {
+        margin-right: 10px;
+    }
+</style>*@
+<div id="toolbar">
+    <button id="remove" class="btn btn-danger" disabled>
+        <i class="glyphicon glyphicon-remove"></i> Delete
+    </button>
+</div>
+    <div class="row">
+        <div id="WorkOrderDetials" class="col-md-3">
+            <form>
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Email address</label>
+                    <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
+                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputPassword1">Password</label>
+                    <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                    <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+        <div id="workOrderList" class="col-md-9">
+            <table id="table"
+                   data-toolbar="#toolbar"
+                   data-search="true"
+                   data-advanced-search="true"
+                   data-id-table="advancedTable"
+                   data-show-refresh="true"
+                   data-show-toggle="true"
+                   data-show-columns="true"
+                   data-show-export="true"
+                   data-detail-view="true"
+                   data-detail-formatter="detailFormatter"             
+                   data-show-pagination-switch="true"
+                   data-pagination="true"
+                   data-id-field="id"
+                   data-page-list="[10, 25, 50, 100, ALL]"
+                   data-show-footer="false"
+                   data-side-pagination="server"
+                   data-url="https://examples.wenzhixin.net.cn/examples/bootstrap_table/data"
+                   data-response-handler="responseHandler"></table>
+        </div>
+    </div>
+    <div class=row>
+        <div class="col-md-3">
+            <table id="tblRecommended"
+                   data-pagination=true
+                   data-page-list="[3, 5, 10, ALL]",
+                   data-show-refresh="true">
+            </table>
+        </div>
+    </div>
+
+    <script>
+        var $table = $('#table')
+        var $remove = $('#remove')
+        var selections = []
+        var $tableRecommended = $('#tblRecommended')
+
+        function getIdSelections() {
+            return $.map($table.bootstrapTable('getSelections'), function (row) {
+                return row.id
+            })
+        }
+
+        function responseHandler(res) {
+            $.each(res.rows, function (i, row) {
+                row.state = $.inArray(row.id, selections) !== -1
+            })
+            return res
+        }
+
+        function detailFormatter(index, row) {
+            var html = []
+            $.each(row, function (key, value) {
+                html.push('<p><b>' + key + ':</b> ' + value + '</p>')
+            })
+            return html.join('')
+        }
+
+        function operateFormatter(value, row, index) {
+            return [
+                '<a class="like" href="javascript:void(0)" title="Like">',
+                '<i class="fa fa-heart"></i>',
+                '</a>  ',
+                '<a class="remove" href="javascript:void(0)" title="Remove">',
+                '<i class="fa fa-trash"></i>',
+                '</a>'
+            ].join('')
+        }
+
+        window.operateEvents = {
+            'click .like': function (e, value, row, index) {
+                alert('You click like action, row: ' + JSON.stringify(row))
+            },
+            'click .remove': function (e, value, row, index) {
+                $table.bootstrapTable('remove', {
+                    field: 'id',
+                    values: [row.id]
+                })
+            }
+        }
+
+        function totalTextFormatter(data) {
+            return 'Total'
+        }
+
+        function totalNameFormatter(data) {
+            return data.length
+        }
+
+        function totalPriceFormatter(data) {
+            var total = 0
+            $.each(data, function (i, row) {
+                total += +(row.price.substring(1))
+            })
+            return '$' + total
+        }
+
+        function getData() {
+            return [
+                {
+                    "id": 0,
+                    "name": "Bob Saget",
+                    "price": "$0"
+                },
+                {
+                    "id": 1,
+                    "name": "Item 1",
+                    "price": "$1"
+                },
+                {
+                    "id": 2,
+                    "name": "Item 2",
+                    "price": "$2"
+                },
+                {
+                    "id": 3,
+                    "name": "Item 3",
+                    "price": "$3"
+                },
+                {
+                    "id": 4,
+                    "name": "Item 4",
+                    "price": "$4"
+                },
+                {
+                    "id": 5,
+                    "name": "Item 5",
+                    "price": "$5"
+                },
+                {
+                    "id": 6,
+                    "name": "Item 6",
+                    "price": "$6"
+                },
+                {
+                    "id": 7,
+                    "name": "Item 7",
+                    "price": "$7"
+                },
+                {
+                    "id": 8,
+                    "name": "Item 8",
+                    "price": "$8"
+                },
+                {
+                    "id": 9,
+                    "name": "Item 9",
+                    "price": "$9"
+                },
+                {
+                    "id": 10,
+                    "name": "Item 10",
+                    "price": "$10"
+                },
+                {
+                    "id": 11,
+                    "name": "Item 11",
+                    "price": "$11"
+                },
+                {
+                    "id": 12,
+                    "name": "Item 12",
+                    "price": "$12"
+                },
+                {
+                    "id": 13,
+                    "name": "Item 13",
+                    "price": "$13"
+                },
+                {
+                    "id": 14,
+                    "name": "Item 14",
+                    "price": "$14"
+                },
+                {
+                    "id": 15,
+                    "name": "Item 15",
+                    "price": "$15"
+                },
+                {
+                    "id": 16,
+                    "name": "Item 16",
+                    "price": "$16"
+                },
+                {
+                    "id": 17,
+                    "name": "Item 17",
+                    "price": "$17"
+                },
+                {
+                    "id": 18,
+                    "name": "Item 18",
+                    "price": "$18"
+                },
+                {
+                    "id": 19,
+                    "name": "Item 19",
+                    "price": "$19"
+                }
+            ]
+        }
+
+        function initTable() {
+            $table.bootstrapTable({
+                height: 350,
+                columns: [
+                    [{
+                        field: 'state',
+                        checkbox: true,
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle'
+                    }, {
+                        title: 'Item ID',
+                        field: 'id',
+                        rowspan: 2,
+                        align: 'center',
+                        valign: 'middle',
+                        sortable: true,
+                        footerFormatter: totalTextFormatter
+                    }, {
+                        title: 'Item Detail',
+                        colspan: 3,
+                        align: 'center'
+                    }],
+                    [{
+                        field: 'name',
+                        title: 'Item Name',
+                        sortable: true,
+                        footerFormatter: totalNameFormatter,
+                        align: 'center'
+                    }, {
+                        field: 'price',
+                        title: 'Item Price',
+                        sortable: true,
+                        align: 'center',
+                        footerFormatter: totalPriceFormatter
+                    }, {
+                        field: 'operate',
+                        title: 'Item Operate',
+                        align: 'center',
+                        events: window.operateEvents,
+                        formatter: operateFormatter
+                    }]
+                ],
+                onColumnAdvancedSearch: function (params) {
+                    console.log(params)
+                    $('#table').bootstrapTable('refresh', { query: { id: 8 } })
+                }
+                //data: getData(),
+                //totalRows: getData().length
+            })
+            $table.on('check.bs.table uncheck.bs.table ' +
+                'check-all.bs.table uncheck-all.bs.table',
+                function () {
+                    $remove.prop('disabled', !$table.bootstrapTable('getSelections').length)
+
+                    // save your data, here just save the current page
+                    selections = getIdSelections()
+                    // push or splice the selections if you want to save all data selections
+                })
+            $table.on('expand-row.bs.table', function (e, index, row, $detail) {
+                if (index % 2 === 1) {
+                    $detail.html('Loading from ajax request...')
+                    $.get('LICENSE', function (res) {
+                        $detail.html(res.replace(/\n/g, '<br>'))
+                    })
+                }
+            })
+            $table.on('all.bs.table', function (e, name, args) {
+                //console.log(name, args)
+            })
+
+            $remove.click(function () {
+                var ids = getIdSelections()
+                $table.bootstrapTable('remove', {
+                    field: 'id',
+                    values: ids
+                })
+                $remove.prop('disabled', true)
+            })
+        }
+        function initRecommended() {
+            $tableRecommended.bootstrapTable({
+                height: 350,
+                columns: [
+                    [{
+                        title: "Technicians",
+                        field: "id",
+                        align: "center"
+                    }],
+                ],
+                data: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }],
+                totalRows: 500
+            })
+        }
+        $(function () {
+            initTable()
+            initRecommended()
+        })
+    </script>
+
