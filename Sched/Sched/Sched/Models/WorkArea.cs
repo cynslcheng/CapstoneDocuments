@@ -6,13 +6,15 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Sched.Models
 {
-    public class TechnicianTypes
+    public class WorkArea
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        private string name { get; set; }
-        private string description { get; set; }
+        private string province { get; }
+        private string country { get; }
+        private string region { get; }
+        private string description { get; }
         public DateTime created_at { get; set; }
-        public byte[] modified_at { get; set; }
+        public DateTime modified_at { get; set; }
     }
 }

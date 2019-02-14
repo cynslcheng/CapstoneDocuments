@@ -16,22 +16,27 @@
 </div>
     <div class="row">
         <div id="WorkOrderDetials" class="col-md-3">
-            <form>
-                <div class="form-group">
-                    <label for="exampleInputEmail1">Email address</label>
-                    <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email">
-                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-                </div>
-                <div class="form-group">
-                    <label for="exampleInputPassword1">Password</label>
-                    <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                    <label class="form-check-label" for="exampleCheck1">Check me out</label>
-                </div>
+            <form method="post" action="@Url.Action("CreateWorkOrder","Display")">
+                <label>StartDate</label>
+                <input class="form-control" type="datetime-local" id="minimum" name="minimum" />
+                <label>EndDate</label>
+                <input class="form-control" type="datetime-local" id="maximum" name="maximum" />
 
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <label>job</label>
+                <input class="form-control" type="radio" id="job" name="job" />
+                <label>priority</label>
+                <input class="form-control" type="radio" id="priority" name="priority" />
+                <label>workArea</label>
+                <input class="form-control" type="radio" id="workArea" name="workArea" />
+                <label>status</label>
+                <input class="form-control" type="radio" id="status" name="status" />
+                <label>address</label>
+                <input class="form-control" type="text" id="address" name="address" />
+                <label>postalCode</label>
+                <input class="form-control" type="text" id="postalCode" name="postalCode" />
+                <label>estimatedTime</label>
+                <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" />
+                <input class="form-control" type="submit" value="=submit" />
             </form>
         </div>
         <div id="workOrderList" class="col-md-9">
@@ -336,4 +341,20 @@
             initRecommended()
         })
     </script>
+@*@using(Html.BeginForm())
+{
+    <div class="form-horizontal">
+       <div class="label">
+           <label>job</label>
+           @Html.DropDownList("test")
+       </div>
+    </div>
+    Username: 
+       Password: < input type = "text" name = "password" /> < br />
 
+
+          <input type = "submit" value = "Login" >
+
+
+             < input type = "submit" value = "Create Account" />
+                }*@
