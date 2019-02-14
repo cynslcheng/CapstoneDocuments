@@ -13,6 +13,7 @@ namespace Sched.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public int jobType { get; }
+        public int estimatedTimeMinuntes { get; }
         public int workOrderId { get; }
     }
 }

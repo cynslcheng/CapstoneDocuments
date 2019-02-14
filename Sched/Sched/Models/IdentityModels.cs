@@ -22,7 +22,7 @@ namespace Sched.Models
         public System.Data.Entity.DbSet<Sched.Models.WorkOrder> WorkOrder { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.WorkArea> workArea { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.TechnicianTypes> technicianTypes { get; set; }
-        public System.Data.Entity.DbSet<Sched.Models.Technician_type_skill> technician_type_skill { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.TechnicianTypeSkill> technicianTypeSkill { get; set; }
 
         public System.Data.Entity.DbSet<Sched.Models.TechnicianSkills> technicianSkills { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.Technician> technician { get; set; }
@@ -33,6 +33,7 @@ namespace Sched.Models
         public System.Data.Entity.DbSet<Sched.Models.JobCrew> jobCrew { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.Job> job { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.Crew> crew { get; set; }
+        public System.Data.Entity.DbSet<Sched.Models.CrewTechnician> crew_technician { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.CrewResource> crew_resources { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.JobTypesResourceType> job_types_resource_type { get; set; }
         public System.Data.Entity.DbSet<Sched.Models.JobTypesTechnicianType> job_types_technician_type { get; set; }
@@ -48,7 +49,7 @@ namespace Sched.Models
             Database.SetInitializer<SchedContext>(null);
             modelBuilder.Entity<Sched.Models.Crew>().ToTable("crew");
             modelBuilder.Entity<Sched.Models.CrewResource>().ToTable("crew_resources");
-            modelBuilder.Entity<Sched.Models.crewTechnician>().ToTable("crew_technician");
+            modelBuilder.Entity<Sched.Models.CrewTechnician>().ToTable("crew_technician");
 
             modelBuilder.Entity<Sched.Models.Job>().ToTable("job");
             modelBuilder.Entity<Sched.Models.JobCrew>().ToTable("job_crew");
@@ -63,7 +64,7 @@ namespace Sched.Models
             modelBuilder.Entity<Sched.Models.Technician>().ToTable("technician");
             modelBuilder.Entity<Sched.Models.TechnicianSkills>().ToTable("technicianSkills");
             modelBuilder.Entity<Sched.Models.TechnicianTypes>().ToTable("techNician_type");
-            modelBuilder.Entity<Sched.Models.Technician_type_skill>().ToTable("technician_type_skill");
+            modelBuilder.Entity<Sched.Models.TechnicianTypeSkill>().ToTable("technician_type_skill");
 
             modelBuilder.Entity<Sched.Models.WorkArea>().ToTable("work_area");
             modelBuilder.Entity<Sched.Models.WorkOrder>().ToTable("work_order");
