@@ -15,7 +15,7 @@ namespace Sched.Controllers
         public ActionResult Index()
         {
 
-          //  ViewBag.Test = "Hello";
+            ViewBag.Test = "Hello";
             
            // validateWorkOrder(DateTime.Now, maxDay, 1, 1, 7, 34, "111 test ave", "n2n 1n1", 30);
          //  WorkOrder workOrder = dbContext.WorkOrder.FirstOrDefault();
