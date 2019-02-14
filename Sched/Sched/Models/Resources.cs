@@ -13,7 +13,9 @@ namespace Sched.Models
         public int Id { get; set; }
         public int resource_type { get; set; }
         public int work_area_id { get; set; }
-        public DateTime modified_at { get; set; }
+        [Timestamp]
+
+        public byte[] modified_at { get; set; }
 
     }
 }

@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Sched.Models
 {
-    public class crewTechnician
+    public class CrewTechnician
     {
         [Key, Column(Order = 1)]
         public int  crewid{ get; set; }

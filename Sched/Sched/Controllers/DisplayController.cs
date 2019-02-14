@@ -277,10 +277,10 @@ namespace Sched.Controllers
 
                     //jobCrew.jobId
                     Crew crew = dbContext.crew.Where(x => x.Id == jobCrew.crewId).First();
-                    crewTechnician cT = new crewTechnician();
+                    CrewTechnician cT = new CrewTechnician();
                     cT.crewid = crew.Id;
                     cT.technicianid = technicianId;
-                    dbContext.crewTechnician.Add(cT);
+                    dbContext.crew_technician.Add(cT);
                     workOrder.status_id = 36;
                     dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
                     dbContext.SaveChanges();
@@ -315,10 +315,10 @@ namespace Sched.Controllers
                 dbContext.jobCrew.Add(jobCrew);
                 dbContext.SaveChanges();
 
-                crewTechnician cT = new crewTechnician();
+                CrewTechnician cT = new CrewTechnician();
                 cT.technicianid = technicianId;
                 cT.crewid = jobCrew.crewId;
-                dbContext.crewTechnician.Add(cT);
+                dbContext.crew_technician.Add(cT);
                 workOrder.status_id = 36;
                 dbContext.SaveChanges();
 
@@ -343,7 +343,7 @@ namespace Sched.Controllers
             bool checkResource = true;
             Job job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First();
             var query = (from technican in dbContext.technician
-                         join crewTechnician in dbContext.crewTechnician on technican.Id equals crewTechnician.technicianid
+                         join crewTechnician in dbContext.crew_technician on technican.Id equals crewTechnician.technicianid
                          join jobCrew in dbContext.jobCrew on crewTechnician.crewid equals jobCrew.crewId
 
                          where jobCrew.jobId == job.Id
@@ -370,7 +370,7 @@ namespace Sched.Controllers
 
 
             var queryResources = (from resources in dbContext.resources
-                                  join CrewResource in dbContext.crewTechnician on resources.Id equals CrewResource.technicianid
+                                  join CrewResource in dbContext.crew_technician on resources.Id equals CrewResource.technicianid
                                   join jobCrew in dbContext.jobCrew on CrewResource.crewid equals jobCrew.crewId
                                   where jobCrew.jobId == job.Id
                                   select new { resources.resource_type }).ToArray();

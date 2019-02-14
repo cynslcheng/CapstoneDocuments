@@ -25,6 +25,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -167,13 +168,14 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\DisplayController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\RecommendationsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Crew.cs" />
     <Compile Include="Models\CrewResource.cs" />
-    <Compile Include="Models\crewTechnician.cs" />
+    <Compile Include="Models\CrewTechnician.cs" />
     <Compile Include="Models\Display.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\Job.cs" />
@@ -182,6 +184,7 @@
     <Compile Include="Models\JobTypesResourceType.cs" />
     <Compile Include="Models\JobTypesTechnicianType.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\Recommendations.cs" />
     <Compile Include="Models\Resources.cs" />
     <Compile Include="Models\ResourceTypes.cs" />
     <Compile Include="Models\resource_type_skill.cs" />
@@ -190,7 +193,7 @@
     <Compile Include="Models\Technician.cs" />
     <Compile Include="Models\TechnicianSkills.cs" />
     <Compile Include="Models\TechnicianTypes.cs" />
-    <Compile Include="Models\Technician_type_skill.cs" />
+    <Compile Include="Models\TechnicianTypeSkill.cs" />
     <Compile Include="Models\WorkArea.cs" />
     <Compile Include="Models\WorkOrder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -253,6 +256,7 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Display.cshtml" />
     <Content Include="Views\Display\Index.cshtml" />
+    <Content Include="Views\Recommendations\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

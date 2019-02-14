@@ -1,0 +1,48 @@
+﻿@model Sched.Models.Recommendations
+
+@{
+    ViewBag.Title = "Reccomendations";
+}
+
+<h2>Reccomendations</h2>
+
+<table class="table">
+    <tr>
+        <th>Recommended Technicians</th>
+    </tr>
+
+    @foreach (var recommendedTechnician in Model.reccomendedTechnicians)
+    {
+        <tr>
+            <td>@recommendedTechnician.technician.first_name @recommendedTechnician.technician.last_name</td>
+        </tr>
+    }
+    <tr>
+        <th>Recommended Resources</th>
+    </tr>
+    @foreach (var recommendationsResource in Model.reccomendedResources)
+    {
+        <tr>
+            <td>@recommendationsResource.resources.resource_type</td>
+        </tr>
+    }
+    <tr>
+        <th>All Technicians</th>
+    </tr>
+    @foreach (var technician in Model.allTechnicians)
+    {
+        <tr>
+            <td>@technician.technician.first_name @technician.technician.last_name</td>
+        </tr>
+    }
+    <tr>
+        <th>All Resources</th>
+    </tr>
+    @foreach (var resource in Model.allResources)
+    {
+        <tr>
+            <td>@resource.resources.resource_type</td>
+        </tr>
+    }
+
+</table>
