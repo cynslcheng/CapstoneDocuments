@@ -56,7 +56,7 @@ namespace Sched.Models
             modelBuilder.Entity<Sched.Models.JobTypes>().ToTable("job_types");
             modelBuilder.Entity<Sched.Models.JobTypesResourceType>().ToTable("job_types_resource_type");
             modelBuilder.Entity<Sched.Models.JobTypesTechnicianType>().ToTable("job_types_technician_type");
-            modelBuilder.Entity<Sched.Models.Resources>().ToTable("resouces");
+            modelBuilder.Entity<Sched.Models.Resources>().ToTable("resources");
             modelBuilder.Entity<Sched.Models.ResourceTypes>().ToTable("resource_type");
             modelBuilder.Entity<Sched.Models.resource_type_skill>().ToTable("resource_type_skill");
 

@@ -8,14 +8,41 @@
 
 <table class="table">
     <tr>
-        <th></th>
+        <th>Recommended Technicians</th>
     </tr>
 
-@foreach (var recommendations in Model.allTechnicians) {
+    @foreach (var recommendedTechnician in Model.reccomendedTechnicians)
+    {
+        <tr>
+            <td>@recommendedTechnician.technician.first_name @recommendedTechnician.technician.last_name</td>
+        </tr>
+    }
     <tr>
-        <td>
-        </td>
+        <th>Recommended Resources</th>
     </tr>
-}
+    @foreach (var recommendationsResource in Model.reccomendedResources)
+    {
+        <tr>
+            <td>@recommendationsResource.resources.resource_type</td>
+        </tr>
+    }
+    <tr>
+        <th>All Technicians</th>
+    </tr>
+    @foreach (var technician in Model.allTechnicians)
+    {
+        <tr>
+            <td>@technician.technician.first_name @technician.technician.last_name</td>
+        </tr>
+    }
+    <tr>
+        <th>All Resources</th>
+    </tr>
+    @foreach (var resource in Model.allResources)
+    {
+        <tr>
+            <td>@resource.resources.resource_type</td>
+        </tr>
+    }
 
 </table>
