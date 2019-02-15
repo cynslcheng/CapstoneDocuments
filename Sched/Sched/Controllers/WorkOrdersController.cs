@@ -15,19 +15,19 @@ namespace Sched.Controllers
     {
         private SchedContext db = new SchedContext();
 
-        // GET: WorkOrders
-        public async Task<ActionResult> Index(string searchField, string searchValue)
+        // GET: WorkOrders List applys search or filters to the list
+        public ActionResult _WorkOrdersPartial(string searchField, string searchValue)
         {
             var workOrder = Session["Filter"] as WorkOrder;
             List<WorkOrder> workOrdersList = null;
             if (workOrder == null)
             {
-                workOrdersList = await db.WorkOrder.ToListAsync();
+                workOrdersList = db.WorkOrder.ToList();
             }
             else if (searchField != null && searchValue != null)
             {
                 var query = "SELECT * FROM work_order WHERE " + searchField + " = " + searchValue;
-                workOrdersList = await db.WorkOrder.SqlQuery(query).ToListAsync();
+                workOrdersList = db.WorkOrder.SqlQuery(query).ToList();
             }
             else
             {
@@ -141,12 +141,12 @@ namespace Sched.Controllers
                         query += " WHERE estimated_time_minutes = " + workOrder.estimated_time_minutes;
                     }
                 }
-                workOrdersList = await db.WorkOrder.SqlQuery(query).ToListAsync();
+                workOrdersList = db.WorkOrder.SqlQuery(query).ToList();
             }
-            return View(workOrdersList);
+            return PartialView(workOrdersList);
         }
 
-        // GET: WorkOrders/Details/5
+        // GET: WorkOrders gets the work order id and saves it into the session
         public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
@@ -158,10 +158,11 @@ namespace Sched.Controllers
             {
                 return HttpNotFound();
             }
-            return View(workOrder);
+            Session["workOrderID"] = workOrder.Id;
+            return RedirectToAction("Index", "Home");
         }
 
-        // GET: WorkOrders/Create
+        // GET: WorkOrders/Filter gets any filters from the session before going to the filter selection view
         public ActionResult Filter()
         {
             var workOrder = Session["Filter"] as WorkOrder;
@@ -172,81 +173,14 @@ namespace Sched.Controllers
             return View(workOrder);
         }
 
-        // POST: WorkOrders/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: WorkOrders/Filter gets the new list of filters and saves them to the session
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Filter([Bind(Include = "Id,minimum_start_time,maximum_start_time,priority,status_id,work_area_id,estimated_time_minutes,created_at,modified_at")] WorkOrder workOrder)
         {
             Session["Filter"] = workOrder;
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Home");
         }
-
-        // GET: WorkOrders/Edit/5
-        public async Task<ActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            WorkOrder workOrder = await db.WorkOrder.FindAsync(id);
-            if (workOrder == null)
-            {
-                return HttpNotFound();
-            }
-            return View(workOrder);
-        }
-
-        // POST: WorkOrders/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Id,minimum_start_time,maximum_start_time,priority,status_id,work_area_id,estimated_time_minutes,created_at,modified_at")] WorkOrder workOrder)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(workOrder).State = EntityState.Modified;
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return View(workOrder);
-        }
-
-        // GET: WorkOrders/Delete/5
-        public async Task<ActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            WorkOrder workOrder = await db.WorkOrder.FindAsync(id);
-            if (workOrder == null)
-            {
-                return HttpNotFound();
-            }
-            return View(workOrder);
-        }
-
-        // POST: WorkOrders/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(int id)
-        {
-            WorkOrder workOrder = await db.WorkOrder.FindAsync(id);
-            db.WorkOrder.Remove(workOrder);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Index");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+        
     }
 }

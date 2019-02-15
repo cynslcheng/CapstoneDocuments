@@ -45,31 +45,31 @@ namespace Sched.Controllers
             // (a)Filter technicians based on dispatch area
             List<Technician> technicians = dbContext.technician.Where(t => t.work_area_Id == workOrder.work_area_id).ToList();
             // (a) Find technicians that meet job requirements
-            List<Technician> eligibleTechnicians = GetEligibleTechnicians(workOrder, job, jobTypes, technicians);
+            List<Technician> eligibleTechnicians = GetEligibleTechnicians(job, jobTypes, technicians);
 
             // (b) Find available eligible technicians from eligible technicians
-            List<Technician> availableEligibleTechnicians = GetAvailableTechnicians(job, jobTypes, eligibleTechnicians);
+            List<Technician> availableEligibleTechnicians = GetAvailableTechnicians(eligibleTechnicians);
 
             // (c) Filter resources based on dispatch area
             List<Resources> resources = dbContext.resources.Where(r => r.work_area_id == workOrder.work_area_id).ToList();
             // (c) Find required resources for job
-            List<Resources> requiredResources = GetRequiredResources(workOrder, job, jobTypes, resources);
+            List<Resources> requiredResources = GetRequiredResources(job, jobTypes, resources);
             // (c) Find available required Resources
-            List<Resources> availableRequiredResources = GetAvailableResources(job, jobTypes, requiredResources);
+            List<Resources> availableRequiredResources = GetAvailableResources(requiredResources);
 
             // (d) Get proximity of preceding job site
             // (e) Get proximity of project work
             // (g) Apply gammification incentives
 
             //Create recommendations model
-            var recommendationsModel = CreateReccomendationsModel(technicians, eligibleTechnicians, availableEligibleTechnicians,
+            var recommendationsModel = CreateReccomendationsModel(workOrder, technicians, eligibleTechnicians, availableEligibleTechnicians,
                 requiredResources, availableRequiredResources);
 
             //Send Recommendations to view
             return PartialView(recommendationsModel);
         }
 
-        private List<Technician> GetEligibleTechnicians(WorkOrder workOrder, Job job, List<JobTypes> jobTypes, List<Technician> technicians)
+        private List<Technician> GetEligibleTechnicians(Job job, List<JobTypes> jobTypes, List<Technician> technicians)
         {
             //Get list of available technicians
             //Find technician types associated to job
@@ -104,7 +104,7 @@ namespace Sched.Controllers
                     }
                 }
             }
-            //Find technicians have the required skills to complete job
+            //Find technicians that have the required skills to complete job
             List<Technician> eligibleTechnicians = new List<Technician>();
             foreach (var technicianType in jobTypesTechnicianTypes)
             {
@@ -120,7 +120,7 @@ namespace Sched.Controllers
             return eligibleTechnicians;
         }
 
-        private List<Technician> GetAvailableTechnicians(Job job, List<JobTypes> jobTypes, List<Technician> eligibleTechnicians)
+        private List<Technician> GetAvailableTechnicians(List<Technician> eligibleTechnicians)
         {
             //Filter eligible technicians for availability
             List<Technician> availableTechnicians = new List<Technician>();
@@ -151,7 +151,9 @@ namespace Sched.Controllers
             return availableTechnicians;
         }
 
-        private List<Resources> GetRequiredResources(WorkOrder workOrder, Job job, List<JobTypes> jobTypes, List<Resources> resources)
+        private List<Resources> GetRequiredResources(Job job, 
+            List<JobTypes> jobTypes, 
+            List<Resources> resources)
         {
             //Find resource types associated to job
             List<JobTypesResourceType> jobTypesResourceTypes = dbContext.job_types_resource_type.ToList();
@@ -181,7 +183,7 @@ namespace Sched.Controllers
             return requiredResources;
         }
 
-        private List<Resources> GetAvailableResources(Job job, List<JobTypes> jobTypes, List<Resources> requiredResources)
+        private List<Resources> GetAvailableResources(List<Resources> requiredResources)
         {
             List<Resources> availableEligibleResources = new List<Resources>();
             List<Resources> eligibleResourcesInCrew = new List<Resources>();
@@ -191,7 +193,8 @@ namespace Sched.Controllers
             {
                 foreach (var crewResource in crewResources)
                 {
-                    if (resource.Id == crewResource.resourcesid && !eligibleResourcesInCrew.Contains(resource))
+                    if (resource.Id == crewResource.resourcesid && 
+                        !eligibleResourcesInCrew.Contains(resource))
                     {
                         eligibleResourcesInCrew.Add(resource);
                     }
@@ -212,7 +215,8 @@ namespace Sched.Controllers
             return availableEligibleResources;
         }
 
-        private Recommendations CreateReccomendationsModel(List<Technician> technicians, 
+        private Recommendations CreateReccomendationsModel(WorkOrder wordOrder,
+            List<Technician> technicians, 
             List<Technician> eligibleTechnicians, 
             List<Technician> availableEligibleTechnicians, 
             List<Resources> requiredResources,
@@ -223,14 +227,17 @@ namespace Sched.Controllers
             //Create all resources list
             IQueryable<ResourcesList> resourcesList = CreateAllRequiredResources(requiredResources, availableRequiredResources);
             //Create reccomended technicians list
-            IQueryable<TechniciansList> recommendedTechnicians = techniciansList.Where(tl => tl.reccomendationLevel == 3);
+            IQueryable<TechniciansList> recommendedTechnicians = techniciansList
+                .Where(tl => tl.reccomendationLevel == 3);
             //Create reccomended resources list
-            IQueryable<ResourcesList> reccomendedResources = resourcesList.Where(rl => rl.reccomendationLevel == 3);
+            IQueryable<ResourcesList> reccomendedResources = resourcesList
+                .Where(rl => rl.reccomendationLevel == 3);
             var recommendationsModel = new Recommendations {
                 reccomendedTechnicians = recommendedTechnicians,
                 reccomendedResources = reccomendedResources,
                 allTechnicians = techniciansList,
-                allResources = resourcesList
+                allResources = resourcesList,
+                workOrder = wordOrder
                 };
 
             return recommendationsModel;
@@ -256,7 +263,8 @@ namespace Sched.Controllers
             //Update eligible technicians (2)
             foreach(Technician eligibleTechnician in eligibleTechnicians)
             {
-                Technician technicianToUpdate = techniciansList.FirstOrDefault(t => t.technician.Id == eligibleTechnician.Id).technician;
+                Technician technicianToUpdate = techniciansList
+                    .FirstOrDefault(t => t.technician.Id == eligibleTechnician.Id).technician;
                 if (technicianToUpdate != null)
                 {
                     techniciansList.Find(t => t.technician == technicianToUpdate).reccomendationLevel = 2;
@@ -266,7 +274,8 @@ namespace Sched.Controllers
             //Update available eligible technicians (3)
             foreach (Technician availableEligibleTechnician in availableEligibleTechnicians)
             {
-                Technician technicianToUpdate = techniciansList.FirstOrDefault(t => t.technician.Id == availableEligibleTechnician.Id).technician;
+                Technician technicianToUpdate = techniciansList
+                    .FirstOrDefault(t => t.technician.Id == availableEligibleTechnician.Id).technician;
                 if (technicianToUpdate != null)
                 {
                     techniciansList.Find(t => t.technician == technicianToUpdate).reccomendationLevel = 3;
@@ -278,7 +287,8 @@ namespace Sched.Controllers
         }
 
 
-        private IQueryable<ResourcesList> CreateAllRequiredResources(List<Resources> requiredResources, List<Resources> availableRequiredResources)
+        private IQueryable<ResourcesList> CreateAllRequiredResources(List<Resources> requiredResources,
+            List<Resources> availableRequiredResources)
         {
             List<ResourcesList> resourcesList = new List<ResourcesList>();
             //Set all to eligible (2)
