@@ -1,4 +1,6 @@
-﻿@{
+﻿@using Sched.Models;
+@model Recommendations
+@{
     ViewBag.Title = "Home Page";
 }
 
@@ -27,5 +29,8 @@
         <h2>Web Hosting</h2>
         <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
         <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+    </div>
+    <div class="col-md-4">
+        @Html.Action("Index","Recommendations", new WOHeader { customer_number = 1, job_type = 2, word_order_id = 23})
     </div>
 </div>

@@ -27,4 +27,11 @@ namespace Sched.Models
         public byte[] modified_at { get; set; }
 
     }
+
+    public class WOHeader
+    {
+        public int customer_number { get; set; }
+        public int job_type { get; set; }
+        public int word_order_id { get; set; }
+    }
 }

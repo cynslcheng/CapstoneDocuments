@@ -16,13 +16,14 @@ namespace Sched.Controllers
         private SchedContext dbContext = new SchedContext();
 
         // GET: Recommendations
-        public ActionResult Index(WorkOrder workOrder)
+        [ChildActionOnly]
+        public ActionResult Index(WOHeader wOHeader)
         {
-            if (workOrder == null)
+            if (wOHeader == null)
             {
                 return View("Index");
             }
-
+            
             /*  In order of steps for recommendations:
             *   a job requirements
             *   b technician availability
@@ -35,12 +36,14 @@ namespace Sched.Controllers
             *  (ex. the closest technician would have a dark green colour, the next-closest a lighter green etc...)
             */
 
-            //For testing workOrder = existing workOrder in db dashboard not ready yet
-            workOrder = dbContext.WorkOrder.FirstOrDefault(wo => wo.Id == 16);
+            //For testing work order id = 23 (existing workOrder in db dashboard not ready yet)
+            wOHeader.word_order_id = 23;
 
+            // (a) Find work order assocaited to work order id in WO header
+            WorkOrder workOrder = dbContext.WorkOrder.FirstOrDefault(wo => wo.Id == wOHeader.word_order_id);
             // (a) Find job associated to work order
             Job job = new Job();
-            job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).FirstOrDefault();
+            job = dbContext.job.FirstOrDefault(x => x.work_order_id == workOrder.Id);
             List<JobTypes> jobTypes = dbContext.jobTypes.ToList();
             // (a)Filter technicians based on dispatch area
             List<Technician> technicians = dbContext.technician.Where(t => t.work_area_Id == workOrder.work_area_id).ToList();
@@ -66,7 +69,7 @@ namespace Sched.Controllers
                 requiredResources, availableRequiredResources);
 
             //Send Recommendations to view
-            return View(recommendationsModel);
+            return PartialView(recommendationsModel);
         }
 
         private List<Technician> GetEligibleTechnicians(WorkOrder workOrder, Job job, List<JobTypes> jobTypes, List<Technician> technicians)
