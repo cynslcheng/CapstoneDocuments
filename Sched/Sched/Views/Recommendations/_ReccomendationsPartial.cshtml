@@ -13,9 +13,18 @@
 
     @foreach (var recommendedTechnician in Model.reccomendedTechnicians)
     {
-        <tr>
-            <td>@recommendedTechnician.technician.first_name @recommendedTechnician.technician.last_name</td>
-        </tr>
+    <tr>
+        <td>
+            <form method="post" action="@Url.Action("AssignTechnician","Display")">
+                <input type="hidden" id="workOrderId" name="workOrderId" value="@Model.workOrder.Id" />
+                <input type="hidden" id="technicianId" name="technicianId" value="@recommendedTechnician.technician.Id" />
+                <label>StartDate</label>
+                <input class="form-control" type="datetime-local" id="startTime" name="startTime" />
+                <input class="form-control" type="submit"
+                       value="@recommendedTechnician.technician.first_name @recommendedTechnician.technician.last_name" />
+            </form>
+        </td>
+    </tr>
     }
     <tr>
         <th>Recommended Resources</th>
@@ -23,7 +32,16 @@
     @foreach (var recommendationsResource in Model.reccomendedResources)
     {
         <tr>
-            <td>@recommendationsResource.resourceName id#: @recommendationsResource.resources.Id</td>
+            <td>
+                <form method="post" action="@Url.Action("AssignResource","Display")">
+                    <input type="hidden" id="workOrderId" name="workOrderId" value="@Model.workOrder.Id" />
+                    <input type="hidden" id="resourceId" name="resourceId" value="@recommendationsResource.resources.Id" />
+                    <label>StartDate</label>
+                    <input class="form-control" type="datetime-local" id="startTime" name="startTime" />
+                    <input class="form-control" type="submit"
+                           value="@recommendationsResource.resourceName id#: @recommendationsResource.resources.Id" />
+                </form>
+            </td>
         </tr>
     }
     <tr>
@@ -32,7 +50,16 @@
     @foreach (var technician in Model.allTechnicians)
     {
         <tr>
-            <td>@technician.technician.first_name @technician.technician.last_name</td>
+            <td>
+                <form method="post" action="@Url.Action("AssignTechnician","Display")">
+                    <input type="hidden" id="workOrderId" name="workOrderId" value="@Model.workOrder.Id" />
+                    <input type="hidden" id="technicianId" name="technicianId" value="@technician.technician.Id" />
+                    <label>StartDate</label>
+                    <input class="form-control" type="datetime-local" id="startTime" name="startTime" />
+                    <input class="form-control" type="submit"
+                           value="@technician.technician.first_name @technician.technician.last_name" />
+                </form>
+            </td>
         </tr>
     }
     <tr>
@@ -41,8 +68,16 @@
     @foreach (var resource in Model.allResources)
     {
         <tr>
-            <td>@resource.resourceName id#: @resource.resources.Id</td>
+            <td>
+                <form method="post" action="@Url.Action("AssignResource","Display")">
+                    <input type="hidden" id="workOrderId" name="workOrderId" value="@Model.workOrder.Id" />
+                    <input type="hidden" id="resourceId" name="resourceId" value="@resource.resources.Id" />
+                    <label>StartDate</label>
+                    <input class="form-control" type="datetime-local" id="startTime" name="startTime" />
+                    <input class="form-control" type="submit"
+                           value="@resource.resourceName id#: @resource.resources.Id" />
+                </form>
+            </td>
         </tr>
     }
-
 </table>

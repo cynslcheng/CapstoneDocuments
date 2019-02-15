@@ -11,6 +11,7 @@ namespace Sched.Models
         public IQueryable<ResourcesList> reccomendedResources { get; set; }
         public IQueryable<TechniciansList> allTechnicians { get; set; }
         public IQueryable<ResourcesList> allResources { get; set; }
+        public WorkOrder workOrder { get; set; }
     }
 
     public class TechniciansList
