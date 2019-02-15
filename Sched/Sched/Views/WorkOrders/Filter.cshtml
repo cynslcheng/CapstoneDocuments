@@ -1,0 +1,145 @@
+﻿@model Sched.Models.WorkOrder
+
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+<div class="form-horizontal">
+    <h4>WorkOrder</h4>
+    <hr />
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-group">
+        @Html.LabelFor(model => model.Id, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @if (Model != null && Model.Id == 0)
+            {
+                @Html.EditorFor(model => model.Id, new { htmlAttributes = new { @Value = "", @class = "form-control" } })
+            }
+            else
+            {
+                @Html.EditorFor(model => model.Id, new { htmlAttributes = new { @class = "form-control" } })
+            }
+            @Html.ValidationMessageFor(model => model.Id, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(model => model.minimum_start_time, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @if (Model != null && Model.minimum_start_time == Convert.ToDateTime("01/01/0001 12:00:00 AM"))
+            {
+                @Html.EditorFor(model => model.minimum_start_time, new { htmlAttributes = new { @Value = "", @class = "form-control" } })
+            }
+            else
+            {
+                @Html.EditorFor(model => model.minimum_start_time, new { htmlAttributes = new { @class = "form-control" } })
+            }
+            @Html.ValidationMessageFor(model => model.minimum_start_time, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.maximum_start_time, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @if (Model != null && Model.maximum_start_time == Convert.ToDateTime("01/01/0001 12:00:00 AM"))
+            {
+                @Html.EditorFor(model => model.maximum_start_time, new { htmlAttributes = new { @Value = "", @class = "form-control" } })
+            }
+            else
+            {
+                @Html.EditorFor(model => model.maximum_start_time, new { htmlAttributes = new { @class = "form-control" } })
+            }
+            @Html.ValidationMessageFor(model => model.maximum_start_time, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.priority, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @if (Model != null && Model.priority == 0)
+            {
+                @Html.EditorFor(model => model.priority, new { htmlAttributes = new { @Value = "", @class = "form-control" } })
+            }
+            else
+            {
+                @Html.EditorFor(model => model.priority, new { htmlAttributes = new { @class = "form-control" } })
+            }
+            @Html.ValidationMessageFor(model => model.priority, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.status_id, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @if (Model != null && Model.status_id == 0)
+            {
+                @Html.EditorFor(model => model.status_id, new { htmlAttributes = new { @Value = "", @class = "form-control" } })
+            }
+            else
+            {
+                @Html.EditorFor(model => model.status_id, new { htmlAttributes = new { @class = "form-control" } })
+            }
+            @Html.ValidationMessageFor(model => model.status_id, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.work_area_id, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @if (Model != null && Model.work_area_id == 0)
+            {
+                @Html.EditorFor(model => model.work_area_id, new { htmlAttributes = new { @Value = "", @class = "form-control" } })
+            }
+            else
+            {
+                @Html.EditorFor(model => model.work_area_id, new { htmlAttributes = new { @class = "form-control" } })
+            }
+            @Html.ValidationMessageFor(model => model.work_area_id, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.address, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.address, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.address, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.postal_code, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.postal_code, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.postal_code, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.estimated_time_minutes, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @if (Model != null && Model.estimated_time_minutes == 0)
+            {
+                @Html.EditorFor(model => model.estimated_time_minutes, new { htmlAttributes = new { @Value = "", @class = "form-control" } })
+            }
+            else
+            {
+                @Html.EditorFor(model => model.estimated_time_minutes, new { htmlAttributes = new { @class = "form-control" } })
+            }
+            @Html.ValidationMessageFor(model => model.estimated_time_minutes, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" formnovalidate value="Apply" class="btn btn-default" />
+        </div>
+    </div>
+</div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

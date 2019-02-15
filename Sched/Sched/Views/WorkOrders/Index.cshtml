@@ -1,0 +1,69 @@
+﻿@model IEnumerable<Sched.Models.WorkOrder>
+
+<p>
+    @Html.ActionLink("Filters", "Filter")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.minimum_start_time)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.maximum_start_time)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.priority)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.status_id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.work_area_id)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.estimated_time_minutes)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.created_at)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.modified_at)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.minimum_start_time)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.maximum_start_time)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.priority)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.status_id)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.work_area_id)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.estimated_time_minutes)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.created_at)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.modified_at)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
+            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
+        </td>
+    </tr>
+}
+
+</table>
