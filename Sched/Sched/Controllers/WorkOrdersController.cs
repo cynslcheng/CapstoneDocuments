@@ -16,18 +16,19 @@ namespace Sched.Controllers
         private SchedContext db = new SchedContext();
 
         // GET: WorkOrders
-        public async Task<ActionResult> Index(string searchField, string searchValue)
+        [ChildActionOnly]
+        public ActionResult Index(string searchField, string searchValue)
         {
             var workOrder = Session["Filter"] as WorkOrder;
             List<WorkOrder> workOrdersList = null;
             if (workOrder == null)
             {
-                workOrdersList = await db.WorkOrder.ToListAsync();
+                workOrdersList = db.WorkOrder.ToList();
             }
             else if (searchField != null && searchValue != null)
             {
                 var query = "SELECT * FROM work_order WHERE " + searchField + " = " + searchValue;
-                workOrdersList = await db.WorkOrder.SqlQuery(query).ToListAsync();
+                workOrdersList = db.WorkOrder.SqlQuery(query).ToList();
             }
             else
             {
@@ -141,9 +142,9 @@ namespace Sched.Controllers
                         query += " WHERE estimated_time_minutes = " + workOrder.estimated_time_minutes;
                     }
                 }
-                workOrdersList = await db.WorkOrder.SqlQuery(query).ToListAsync();
+                workOrdersList = db.WorkOrder.SqlQuery(query).ToList();
             }
-            return View(workOrdersList);
+            return PartialView(workOrdersList);
         }
 
         // GET: WorkOrders/Details/5
