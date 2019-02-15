@@ -105,6 +105,30 @@ namespace Sched.Controllers
                         query += " WHERE status_id = " + workOrder.status_id;
                     }
                 }
+                if (workOrder.address != "")
+                {
+                    if (queryModified)
+                    {
+                        query += " AND address = " + workOrder.Id;
+                    }
+                    else
+                    {
+                        queryModified = true;
+                        query += " WHERE address = " + workOrder.Id;
+                    }
+                }
+                if (workOrder.postal_code != "")
+                {
+                    if (queryModified)
+                    {
+                        query += " AND postal_code = " + workOrder.Id;
+                    }
+                    else
+                    {
+                        queryModified = true;
+                        query += " WHERE postal_code = " + workOrder.Id;
+                    }
+                }
                 if (workOrder.estimated_time_minutes != 0)
                 {
                     if (queryModified)
