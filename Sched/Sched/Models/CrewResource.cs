@@ -10,7 +10,7 @@ namespace Sched.Models
     public class CrewResource
     {
         [Key, Column(Order = 1)]
-        public int resourceid { get; set; }
+        public int resourcesid { get; set; }
         [Key, Column(Order = 2)]
         public int crewID { get; set; }
     }

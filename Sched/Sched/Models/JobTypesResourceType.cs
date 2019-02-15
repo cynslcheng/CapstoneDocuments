@@ -10,9 +10,9 @@ namespace Sched.Models
     public class JobTypesResourceType
     {
         [Key, Column(Order = 1)]
-        public int jobTypeID { get; set; }
+        public int job_types_id { get; set; }
         [Key, Column(Order = 2)]
-        public int resourceTypeId { get; set; }
+        public int resource_type_id { get; set; }
 
     }
 }

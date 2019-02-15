@@ -17,10 +17,14 @@ namespace Sched.Models
         public int priority { get; set; }
         public int status_id{get;set;}
         public int work_area_id { get; set; }
-        
+        public string address { get; set; }
+        public string postal_code { get; set; }
         public int estimated_time_minutes { get; set; }
         public DateTime created_at { get; set; }
-        public Byte[] modified_at { get; set; }
+        
+        [Timestamp]
+
+        public byte[] modified_at { get; set; }
 
     }
 }
