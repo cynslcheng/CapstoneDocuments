@@ -6,7 +6,9 @@
 <div class="row">
     @Html.Action("Index", "WorkOrders")
 </div>
-
+<div class="row">
+    @Html.Action("_WorkOrdersPartial", "WorkOrders")
+</div>
 <div class="row">
     <div class="col-md-4">
         @Html.Action("_ReccomendationsPartial", "Recommendations", new WOHeader { customer_number = 1, job_type = 2, word_order_id = 23 })
