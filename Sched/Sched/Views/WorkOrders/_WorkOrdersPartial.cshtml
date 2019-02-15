@@ -1,10 +1,19 @@
 ﻿@model IEnumerable<Sched.Models.WorkOrder>
 
-<p>
-    @Html.ActionLink("Filters", "Filter")
-</p>
+<form method="post" action="@Url.Action("Search","WorkOrders")">
+    <input type="hidden" id="searchField" name="searchField" value="id" />
+    <label for="searchValue" class="control-label col-md-2">Work Order ID</label>
+    <input class="form-control col-md-2" type="text" id="searchValue" name="searchValue" />
+    <input class="col-sm-offset-1" type="submit" value="Search" />
+</form>
+<br />
+<button onclick="location.href = '@(Url.Action("Filter", "WorkOrders"))'">Filters</button>
+<br /><br />
 <table class="table">
     <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Id)
+        </th>
         <th>
             @Html.DisplayNameFor(model => model.minimum_start_time)
         </th>
@@ -34,6 +43,9 @@
 
 @foreach (var item in Model) {
     <tr onclick="location.href = '@(Url.Action("Details", "WorkOrders", new { id = item.Id }))'">
+        <td>
+            @Html.DisplayFor(modelItem => item.Id)
+        </td>
         <td>
             @Html.DisplayFor(modelItem => item.minimum_start_time)
         </td>

@@ -16,11 +16,14 @@ namespace Sched.Controllers
         private SchedContext db = new SchedContext();
 
         // GET: WorkOrders List applys search or filters to the list
-        public ActionResult _WorkOrdersPartial(string searchField, string searchValue)
+        [ChildActionOnly]
+        public ActionResult _WorkOrdersPartial()
         {
             var workOrder = Session["Filter"] as WorkOrder;
+            string searchField = Session["searchField"] as string;
+            string searchValue = Session["searchValue"] as string;
             List<WorkOrder> workOrdersList = null;
-            if (workOrder == null)
+            if (workOrder == null && (searchField == null || searchValue == null))
             {
                 workOrdersList = db.WorkOrder.ToList();
             }
@@ -181,6 +184,15 @@ namespace Sched.Controllers
             Session["Filter"] = workOrder;
             return RedirectToAction("Index", "Home");
         }
-        
+
+        //POST: Search term is saved in sesssion
+        [HttpPost]
+        public async Task<ActionResult> Search(string searchField, string searchValue)
+        {
+            Session["searchField"] = searchField;
+            Session["searchValue"] = searchValue;
+            return RedirectToAction("Index", "Home");
+        }
+
     }
 }
