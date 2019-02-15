@@ -3,18 +3,17 @@
     ViewBag.Title = "Home Page";
 }
 
-
 <div class="row">
     @Html.Action("_WorkOrdersPartial", "WorkOrders")
 </div>
 <div class="row">
     <div class="col-md-4">
-        @Html.Action("_ReccomendationsPartial", "Recommendations", new WOHeader { customer_number = 1, job_type = 2, word_order_id = 23 })
-    </div>
-    
-    
-    <div class="col-md-4">
         @Html.Action("_ReccomendationsPartial", "Recommendations", new WOHeader { customer_number = 1, job_type = 2, word_order_id = 23})
+        @if (Session["WOHeader"] != null)
+        {
+            WOHeader WOHeader = (WOHeader)Session["WOHeader"];
+            @Html.Action("_ReccomendationsPartial", "Recommendations", new { WOHeader })
+        }
     </div>
     <form>
         <input type="button" value="Create Work Order" onclick="location.href='@Url.Action("NewWorkOrder","Display")'"/>

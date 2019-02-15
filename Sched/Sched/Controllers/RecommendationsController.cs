@@ -35,7 +35,7 @@ namespace Sched.Controllers
             {
                 return View("_ReccomendationsPartial");
             }
-
+            
             // (a) Find work order assocaited to work order id in WO header
             WorkOrder workOrder = dbContext.WorkOrder.FirstOrDefault(wo => wo.Id == wOHeader.word_order_id);
             // (a) Find job associated to work order
@@ -57,9 +57,9 @@ namespace Sched.Controllers
             // (c) Find available required Resources
             List<Resources> availableRequiredResources = GetAvailableResources(requiredResources);
 
-            // (d) Get proximity of preceding job site
-            // (e) Get proximity of project work
-            // (g) Apply gammification incentives
+            // (d) Get proximity of preceding job site (iter3)
+            // (e) Get proximity of project work (iter3)
+            // (g) Apply gammification incentives (iter3)
 
             //Create recommendations model
             var recommendationsModel = CreateReccomendationsModel(workOrder, technicians, eligibleTechnicians, availableEligibleTechnicians,
