@@ -49,24 +49,24 @@ namespace Sched.Controllers
                 {
                     if (queryModified)
                     {
-                        query += " AND minimum_start_time = " + workOrder.minimum_start_time;
+                        query += " AND maximum_start_time > '" + workOrder.minimum_start_time + "'";
                     }
                     else
                     {
                         queryModified = true;
-                        query += " WHERE minimum_start_time = " + workOrder.minimum_start_time;
+                        query += " WHERE maximum_start_time > '" + workOrder.minimum_start_time + "'";
                     }
                 }
                 if (workOrder.maximum_start_time != Convert.ToDateTime("01/01/0001 12:00:00 AM"))
                 {
                     if (queryModified)
                     {
-                        query += " AND maximum_start_time = " + workOrder.maximum_start_time;
+                        query += " AND minimum_start_time < '" + workOrder.maximum_start_time + "'";
                     }
                     else
                     {
                         queryModified = true;
-                        query += " WHERE maximum_start_time = " + workOrder.maximum_start_time;
+                        query += " WHERE minimum_start_time < '" + workOrder.maximum_start_time + "'";
                     }
                 }
                 if (workOrder.priority != 0)
@@ -105,28 +105,28 @@ namespace Sched.Controllers
                         query += " WHERE status_id = " + workOrder.status_id;
                     }
                 }
-                if (workOrder.address != "")
+                if (workOrder.address != null)
                 {
                     if (queryModified)
                     {
-                        query += " AND address = " + workOrder.Id;
+                        query += " AND address = " + workOrder.address;
                     }
                     else
                     {
                         queryModified = true;
-                        query += " WHERE address = " + workOrder.Id;
+                        query += " WHERE address = " + workOrder.address;
                     }
                 }
-                if (workOrder.postal_code != "")
+                if (workOrder.postal_code != null)
                 {
                     if (queryModified)
                     {
-                        query += " AND postal_code = " + workOrder.Id;
+                        query += " AND postal_code = " + workOrder.postal_code;
                     }
                     else
                     {
                         queryModified = true;
-                        query += " WHERE postal_code = " + workOrder.Id;
+                        query += " WHERE postal_code = " + workOrder.postal_code;
                     }
                 }
                 if (workOrder.estimated_time_minutes != 0)
