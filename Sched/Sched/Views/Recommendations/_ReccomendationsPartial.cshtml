@@ -23,7 +23,7 @@
     @foreach (var recommendationsResource in Model.reccomendedResources)
     {
         <tr>
-            <td>@recommendationsResource.resources.resource_type</td>
+            <td>@recommendationsResource.resourceName id#: @recommendationsResource.resources.Id</td>
         </tr>
     }
     <tr>
@@ -41,7 +41,7 @@
     @foreach (var resource in Model.allResources)
     {
         <tr>
-            <td>@resource.resources.resource_type</td>
+            <td>@resource.resourceName id#: @resource.resources.Id</td>
         </tr>
     }
 

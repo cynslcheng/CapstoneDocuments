@@ -16,28 +16,25 @@ namespace Sched.Controllers
         private SchedContext dbContext = new SchedContext();
 
         // GET: Recommendations
+        /*  In order of steps for recommendations:
+        *   a job requirements
+        *   b technician availability
+        *   c resource requirements
+        *   d geographic proximity of preceding job site
+        *   e geographic proximity of project work
+        *   f gamification incentives
+        *  eligible technician and resource rows should 
+        *  be colour coded to indicate their proximity from their previous job site 
+        *  (ex. the closest technician would have a dark green colour, the next-closest a lighter green etc...)
+        *  **Ideally update to use stored procedures
+        */
         [ChildActionOnly]
-        public ActionResult Index(WOHeader wOHeader)
+        public ActionResult _ReccomendationsPartial(WOHeader wOHeader)
         {
             if (wOHeader == null)
             {
-                return View("Index");
+                return View("_ReccomendationsPartial");
             }
-            
-            /*  In order of steps for recommendations:
-            *   a job requirements
-            *   b technician availability
-            *   c resource requirements
-            *   d geographic proximity of preceding job site
-            *   e geographic proximity of project work
-            *   f gamification incentives
-            *  eligible technician and resource rows should 
-            *  be colour coded to indicate their proximity from their previous job site 
-            *  (ex. the closest technician would have a dark green colour, the next-closest a lighter green etc...)
-            */
-
-            //For testing work order id = 23 (existing workOrder in db dashboard not ready yet)
-            wOHeader.word_order_id = 23;
 
             // (a) Find work order assocaited to work order id in WO header
             WorkOrder workOrder = dbContext.WorkOrder.FirstOrDefault(wo => wo.Id == wOHeader.word_order_id);
@@ -287,10 +284,12 @@ namespace Sched.Controllers
             //Set all to eligible (2)
             foreach (Resources resource in requiredResources)
             {
+                ResourceTypes resourcesType = dbContext.resourcesTypes.FirstOrDefault(rt => rt.Id == resource.resource_type);
                 ResourcesList resourceToAdd = new ResourcesList
                 {
                     resources = resource,
-                    reccomendationLevel = 2
+                    reccomendationLevel = 2,
+                    resourceName = resourcesType.name
                 };
                 resourcesList.Add(resourceToAdd);
             }

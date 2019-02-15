@@ -23,5 +23,6 @@ namespace Sched.Models
     {
         public Resources resources { get; set; }
         public int reccomendationLevel { get; set; }
+        public string resourceName { get; set; }
     }
 }

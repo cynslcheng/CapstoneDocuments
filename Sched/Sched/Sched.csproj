@@ -259,7 +259,7 @@
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Display.cshtml" />
     <Content Include="Views\Display\Index.cshtml" />
-    <Content Include="Views\Recommendations\Index.cshtml" />
+    <Content Include="Views\Recommendations\_ReccomendationsPartial.cshtml" />
     <Content Include="Views\WorkOrders\Index.cshtml" />
     <Content Include="Views\WorkOrders\Filter.cshtml" />
   </ItemGroup>
