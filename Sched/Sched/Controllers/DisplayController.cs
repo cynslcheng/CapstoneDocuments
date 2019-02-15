@@ -8,44 +8,46 @@ using System.Web.Mvc;
 
 namespace Sched.Controllers
 {
+    /// <summary>
+    /// Use session variables to tell view which forms to load
+    /// also use session variables to keep forms populated while other actions/methods are occuring in other controllers
+    /// </summary>
     public class DisplayController : Controller
     {
         SchedContext dbContext = new SchedContext();
+
         
         public ActionResult Index()
         {
-
+            dbContext.jobTypes.Select(x => new { Id = x.Id, Type = x.name });
             //  ViewBag.Test = "Hello";
-            DateTime maximum = DateTime.Now;
-            DateTime minimum = DateTime.Now;
-            maximum = maximum.AddDays(1);
-            WorkOrder workorder = dbContext.WorkOrder.Where(x => x.Id == 22).First();
-           // AssignResource(22, 2, minimum);
-            //AssignTechnician(22, 1, minimum);
-            // validateWorkOrder(DateTime.Now, maxDay, 1, 1, 7, 34, "111 test ave", "n2n 1n1", 30);
-            //  WorkOrder workOrder = dbContext.WorkOrder.FirstOrDefault();
-            //updateWorkOrder(16, minimum, maximum, 1, 3, 8, 34, "123 nowhere", "n3r 1k4", 70);
-          //  CreateWorkOrder(minimum, maximum, 1, 2, 7, 34, "123 test Street", "n3r 1k4", 70);
-            //Book(workorder);
+
             return View();
         }
         /// <summary>
         /// create new work order
         /// </summary>
         /// <returns></returns>
+       
+            
+
         public ActionResult NewWorkOrder()
         {
-           
+            Session["WorkOrderFormType"] = "Create";
+
             WorkOrder workOrder = new WorkOrder();
             workOrder.maximum_start_time = DateTime.Now;
             workOrder.minimum_start_time = DateTime.Now;
-            workOrder.work_area_id = 7;
+            // workOrder.work_area_id = 7;
             //workOrder.modified_at = DateTime.Now;
-            
-            workOrder.status_id = 34;
 
-            Session["NewWorkOrder"] = workOrder;
-            return View("Index");
+            workOrder.status_id = 34;
+            populateSelectList();
+            // //Session["WorkArea"]=
+            // Session["NewWorkOrder"] = workOrder;
+            // Session["WorkOrderFormType"] = "Create";
+            // return View();
+          return  RedirectToAction("Index","Home");
         }
 
         /// <summary>
@@ -53,52 +55,121 @@ namespace Sched.Controllers
         /// </summary>
         /// <param name="workOrder"></param>
         /// <returns></returns>
+        [ChildActionOnly]
         public ActionResult SelectWorkOrder(WorkOrder workOrder)
         {
 
             //THIS IS WHERE THOMAS'S CONTROL EVENT SHOULD LEAD TO****************
 
+            //incase work order has been changed in between dispatcher clicking and when this method is called
+            workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrder.Id).First();
             Session["SelectedWorkOrder"] = workOrder;
-            return View("index");
+            return View(workOrder);
         }
-        public void CreateWorkOrder(DateTime minimum, DateTime maximum, int priority,int jobType,int workArea, int status,string address,string postalCode,int estimatedTime)
+        private void populateSelectList()
+        {
+            
+            List<SelectListItem> jobSelectList= new List<SelectListItem>();
+            var jobSelectItems = dbContext.jobTypes;
+            bool update = false;
+            int jobTypeId=0;
+            int workAreaId = 0;
+            WorkOrder workOrder = (WorkOrder)Session["WorkOrder"];
+            if (Session["WorkOrderFormType"].ToString() == "Update")
+            {
+                update = true;
+                jobTypeId = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First().job_type_id;
+                workAreaId = dbContext.WorkOrder.Where(x => x.work_area_id == workOrder.work_area_id).First().work_area_id;
+
+            }
+            foreach (var selectItemJob in jobSelectItems)
+            {
+                if (update&&selectItemJob.Id==jobTypeId)
+                {
+                    jobSelectList.Add(new SelectListItem { Text = selectItemJob.name, Value = selectItemJob.Id.ToString(),Selected=true });
+                }
+                else
+                {
+                    jobSelectList.Add(new SelectListItem { Text = selectItemJob.name, Value = selectItemJob.Id.ToString() });
+                }
+                
+            }
+            List<SelectListItem> workAreaList = new List<SelectListItem>();
+            var workAreaSelectItems = dbContext.workArea;
+            foreach (var selectItemWorkArea in workAreaSelectItems)
+            {
+                if (update&&selectItemWorkArea.Id==workAreaId)
+                {
+                    workAreaList.Add(new SelectListItem { Text = selectItemWorkArea.region, Value = selectItemWorkArea.Id.ToString(),Selected=true });
+                }
+                workAreaList.Add(new SelectListItem { Text = selectItemWorkArea.region,Value=selectItemWorkArea.Id.ToString() });
+
+            }
+            
+            Session["WorkAreaList"] = workAreaList;
+            Session["JobSelectList"] = jobSelectList;
+           
+        }
+       
+        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, int priority,int jobType,int workArea, string address,string postalCode,int estimatedTime)
         {
             //use model binding https://www.completecsharptutorial.com/mvc-articles/4-ways-to-collect-form-data-in-controller-class-in-asp-net-mvc-5.php
             //if (ValidateWorkOrder(workOrder))
-            if(validateWorkOrder(minimum,maximum,address,postalCode,estimatedTime))
+            WorkOrder workOrder = new WorkOrder();
+            workOrder.maximum_start_time = maximum;
+            workOrder.minimum_start_time = minimum;
+            workOrder.created_at = DateTime.Now;
+            workOrder.priority = priority;
+            workOrder.work_area_id = workArea;
+            //workOrder.status_id = statusId;
+            workOrder.address = address;
+            workOrder.postal_code = postalCode;
+            if (validateWorkOrder(minimum,maximum,address,postalCode,estimatedTime))
             {
+                int statusId = dbContext.status.Where(x => x.name == "WSCHED").First().Id;
                 //check that dates are in the future
                 Job job = new Job();
                 job.job_type_id = jobType;
                 job.created_At = DateTime.Now;
                 job.estimated_time_minutes = estimatedTime;
-                WorkOrder workOrder = new WorkOrder();              
-                workOrder.maximum_start_time = maximum;
-                workOrder.minimum_start_time = minimum;
-                workOrder.created_at = DateTime.Now;
-                workOrder.priority = priority;
-                workOrder.work_area_id = workArea;
-                workOrder.status_id = status;
-                workOrder.address = address;
-                workOrder.postal_code = postalCode;
+                
                 //validateWorkOrder()
                 
                 dbContext.WorkOrder.Add(workOrder);
                 dbContext.SaveChanges();
                 int lastId = dbContext.WorkOrder.OrderByDescending(p => p.Id).FirstOrDefault().Id;
                 job.work_order_id = lastId;
-                job.status_id = status;
+                job.status_id = statusId;
                 dbContext.job.Add(job);
 
                 //this will work when constraints on database are changed
-                Session["NewWorkOrder"] = null;
+                Session["WorkOrderFormType"] = null;
+               Session["NewWorkOrder"] = null;
                 dbContext.SaveChanges();
                 ViewBag.SuccessCreate = "Work order Created";
             }
-           // return View("index");
+            else
+            {
+                Session["WorkOrderCrud"] = workOrder;
+                return PartialView(workOrder);
+               
+                //ViewBag.Error=""
+            }
+            return RedirectToAction("Index", "Home");
             //        ViewBag.WorkOrder = workOrder;
-            
+
         }
+        public ActionResult update(int workOrderId)
+        {
+            WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
+            Session["WorkOrderFormType"] = "Update";
+            Session["WorkOrderCrud"] = workOrder;
+            Session["MaxDateTime"]=  workOrder.maximum_start_time;
+            Session["MinSDateTime"] = workOrder.minimum_start_time;
+            populateSelectList();
+           return RedirectToAction("Index", "Home");
+        }
+        [ChildActionOnly]
         public ActionResult updateWorkOrder(int id,DateTime minimum, DateTime maximum, int priority, int jobType, int workArea, int status, string address, string postalCode, int estimatedTime)
         {
            // validateWorkOrder(minimum, maximum, priority, jobType, workArea, status, address, postalCode, estimatedTime);
@@ -115,15 +186,21 @@ namespace Sched.Controllers
                 dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
                 dbContext.SaveChanges();
                 ViewBag.UpdateSuccess = "Work order updated!";
+                Session["WorkOrderFormType"] = null;
+                Session["WorkOrderCrud"] = null;
+                return PartialView(workOrder);
             }
             else
             {
-                ViewBag.WorkOrderError = "Invalid";
+                WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == id).FirstOrDefault();
+                //ViewBag.WorkOrderError = "Invalid";
+                return PartialView(workOrder);
                 //return error message
             }
-            return View("index");
+           // return View("index");
             
         }
+
         public bool validateWorkOrder(DateTime minimum, DateTime maximum,  string address, string postalCode, int estimatedTime)
         {
             string validationExpression = @"^[ABCEGHJ-NPRSTVXY]{1}[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[ ]?[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[0-9]{1}$";
@@ -158,8 +235,11 @@ namespace Sched.Controllers
             }
             return true;
         }
-        public void cancelWorkOrderConfirmation()
+        public void cancelWorkOrderConfirmation(int id)
         {
+            WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == id).FirstOrDefault();
+            Session["WorkOrderFormType"] = "Cancel";
+            Session["WorkOrderCrud"] = workOrder;
             //get confirmation message
         }
         public ActionResult cancelWorkOrder(WorkOrder workOrder)
@@ -174,6 +254,8 @@ namespace Sched.Controllers
             }
             dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
             dbContext.SaveChanges();
+            Session["WorkOrderFormType"] = null;
+            Session["WorkOrderCrud"] = null;
             return View("index");
         }
 
@@ -187,6 +269,7 @@ namespace Sched.Controllers
         //    return false;
         //}
         ////
+        [ChildActionOnly]
         public void AssignResource(int workOrderId, int resouceId,DateTime startTime)
         {
             //when the list of workorders is up and running 
@@ -257,7 +340,7 @@ namespace Sched.Controllers
             
           //  return View("Index");
         }
-
+        [ChildActionOnly]
         public ActionResult AssignTechnician(int workOrderId, int technicianId, DateTime startTime)
         {
             //when the list of workorders is up and running 
@@ -326,11 +409,11 @@ namespace Sched.Controllers
 
             }
            
-            return View("Index");
+            return View(workOrder);
         }
 
-        
 
+        [ChildActionOnly]
         public ActionResult Book(WorkOrder workOrder)
         {
             //
@@ -396,13 +479,7 @@ namespace Sched.Controllers
                
             }
 
-            //foreach (Job job in jobs)
-            //{
-
-            //    // JobCrew jobCrew = dbContext.jobCrew.Where(x => x.jobId == job.Id).FirstOrDefault();
-
-
-            //}
+         
             if (ViewBag.Error=="")
             {
                 int updateStatus = dbContext.status.Where(x => x.name == "DIS").FirstOrDefault().Id;
@@ -418,6 +495,7 @@ namespace Sched.Controllers
             }
             //figure out how to check if a job has technician that meets the requirements
             //update the status of the work order
+
            return View("index");
         }
 
