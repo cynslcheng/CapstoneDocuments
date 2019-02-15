@@ -162,6 +162,8 @@ namespace Sched.Controllers
                 return HttpNotFound();
             }
             Session["workOrderID"] = workOrder.Id;
+            Job job = await db.job.FirstAsync(j => j.work_order_id == workOrder.Id);
+            Session["WOHeader"] = new WOHeader { word_order_id = workOrder.Id, customer_number = 1, job_type = job.job_type_id };
             return RedirectToAction("Index", "Home");
         }
 
