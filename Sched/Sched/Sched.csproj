@@ -179,6 +179,7 @@
     <Compile Include="Models\Crew.cs" />
     <Compile Include="Models\CrewResource.cs" />
     <Compile Include="Models\CrewTechnician.cs" />
+    <Compile Include="Models\DashboardDisplay.cs" />
     <Compile Include="Models\Display.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\Job.cs" />
