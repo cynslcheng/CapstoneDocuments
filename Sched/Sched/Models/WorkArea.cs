@@ -10,11 +10,11 @@ namespace Sched.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        private string province { get; }
-        private string country { get; }
-        private string region { get; }
-        private string description { get; }
+        public string province { get; set; }
+        public string country { get; set; }
+        public string region { get; set; }
+        public string description { get; set; }
         public DateTime created_at { get; set; }
-        public DateTime modified_at { get; set; }
+        public byte[] modified_at { get; set; }
     }
 }
