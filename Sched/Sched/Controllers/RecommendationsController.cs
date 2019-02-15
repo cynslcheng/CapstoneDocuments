@@ -35,7 +35,7 @@ namespace Sched.Controllers
             {
                 return View("_ReccomendationsPartial");
             }
-
+            
             // (a) Find work order assocaited to work order id in WO header
             WorkOrder workOrder = dbContext.WorkOrder.FirstOrDefault(wo => wo.Id == wOHeader.word_order_id);
             // (a) Find job associated to work order
