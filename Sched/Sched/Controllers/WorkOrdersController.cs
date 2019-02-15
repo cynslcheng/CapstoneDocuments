@@ -16,6 +16,7 @@ namespace Sched.Controllers
         private SchedContext db = new SchedContext();
 
         // GET: WorkOrders List applys search or filters to the list
+        [ChildActionOnly]
         public ActionResult _WorkOrdersPartial(string searchField, string searchValue)
         {
             var workOrder = Session["Filter"] as WorkOrder;
