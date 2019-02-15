@@ -158,7 +158,8 @@ namespace Sched.Controllers
             {
                 return HttpNotFound();
             }
-            Session["workOrderID"] = workOrder.Id;
+            Session["workOrder"] = workOrder;
+            Session["WorkOrderFormType"] = "Select";
             return RedirectToAction("Index", "Home");
         }
 

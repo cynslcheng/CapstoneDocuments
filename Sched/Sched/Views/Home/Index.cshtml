@@ -3,11 +3,7 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
+
 <div class="row">
     @Html.Action("_WorkOrdersPartial", "WorkOrders")
 </div>
@@ -15,97 +11,103 @@
     <div class="col-md-4">
         @Html.Action("_ReccomendationsPartial", "Recommendations", new WOHeader { customer_number = 1, job_type = 2, word_order_id = 23 })
     </div>
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
+    
+    
     <div class="col-md-4">
         @Html.Action("_ReccomendationsPartial", "Recommendations", new WOHeader { customer_number = 1, job_type = 2, word_order_id = 23})
     </div>
     <form>
         <input type="button" value="Create Work Order" onclick="location.href='@Url.Action("NewWorkOrder","Display")'"/>
         @*need to get workorderId*@
-        <input type="button" value="Update Work Order" onclick="location.href='@Url.Action("Update","Display", new {workOrderId=22 })'" />
+        <input type="button" value="Update Work Order" onclick="location.href='@Url.Action("Update","Display")'" />
+        @if (Session["workOrder"] != null)
+        {
+            <input type="button" value="Book Work Order" onclick="location.href='@Url.Action("Book","Display")'" />
+            <input type="button" value="cancel Work Order" onclick="location.href='@Url.Action("Cancel","Display")'" />
+
+        }
     </form>
     @*Work Order Crud view
     This uses session variables to determine which form to display and uses sessions to pass the work order model
     This allows the forms to remain unaffected by filters*@
-    @if (Session["WorkOrderFormType"] == null)
+    @if (Session["Success"] != null)
     {
-        <form method="post" action="@Url.Action("CreateWorkOrder","Display")">
-            <label>Start Date</label>
-            <input class="form-control" type="datetime-local" id="minimum" name="minimum" />
-            <label>End Date</label>
-            <input class="form-control" type="datetime-local" id="maximum" name="maximum" />
+        <label>@Session["Success"].ToString()<br /></label>
+    }
+    @if (Session["Error"] != null)
+    {
+        <label>@Session["Error"]<br /></label>
+    }
 
-            <label>job Type</label>
-            <input class="form-control" type="radio" id="job" name="job" />
-            <label>priority</label>
-            <input class="form-control" type="radio" id="priority" name="priority" />
-            <label>Work Area</label>
-            <input class="form-control" type="radio" id="workArea" name="workArea" />
-
-            <label>Address</label>
-            <input class="form-control" type="text" id="address" name="address"  />
-            <label>Postal Code</label>
-            <input class="form-control" type="text" id="postalCode" name="postalCode" />
-            <label>Estimated Time</label>
-            <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" />
+    @if(Session["WorkOrderFormType"]==null|| Session["WorkOrderFormType"].ToString() =="Select")
+    {
+        if (Session["workOrder"]!=null)
+        {
+            WorkOrder workOrder = (WorkOrder)Session["workOrder"];
+            <label>Id: @workOrder.Id<br /></label>
+            <label>Estimated Time(mins): @workOrder.estimated_time_minutes<br /></label>
+            <label>Max Start Time: @workOrder.maximum_start_time<br /></label>
+            <label>Min Start Time: @workOrder.minimum_start_time<br /></label>
+            <label>Postal Code: @workOrder.postal_code<br /></label>
+            <label>Priority: @workOrder.priority<br /></label>
+            <label>Address: @workOrder.address<br /></label>
+            <label>Status Id: @workOrder.status_id<br /></label>
+            <label>Area Id:@workOrder.work_area_id<br /></label>
+        }
+    }
+    else if (Session["WorkOrderFormType"].ToString() == "Cancel")
+    {
+        WorkOrder cancelWorkOrder = (WorkOrder)Session["workOrder"];
+        <form method="post" action="@Url.Action("cancelWorkOrder","Display")">
+            <label>Are you sure you want to delete work order: @cancelWorkOrder.Id</label>
+            <button class="btn-blue">@Html.ActionLink("Cancel", "Index" , "Home")</button>
+           
             <input class="form-control" type="submit" value="submit" />
         </form>
     }
     else if (Session["WorkOrderFormType"].ToString() == "Create")
     {
-           var test = Session["WorkAreaList"];
-            <form method="post" action="@Url.Action("CreateWorkOrder","Display")">
-                <label>Start Date</label>
-                <input class="form-control" type="datetime-local" id="minimum" name="minimum" />
-                <label>End Date</label>
-                <input class="form-control" type="datetime-local" id="maximum" name="maximum" />
-                <label>priority</label>
-                1 - 4?
-                <label>job Type</label>
-                @Html.DropDownList("jobType",(IEnumerable<SelectListItem>)Session["JobSelectList"])
-                
-                <input class="form-control" type="radio" id="priority" name="priority" />
-                <label>Work Area</label>
-               @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
+
+        var test = Session["WorkAreaList"];
+        <form method="post" action="@Url.Action("CreateWorkOrder", "Display")">
+
+            <label>Current Max start date @Session["MinDateTime"]</label>
+            <label>Earliest Start Date</label>
+            <input class="form-control" type="datetime-local" id="minimum" name="minimum" required="true" />
+
+            <label>Current Max start date @Session["MaxDateTime"]</label>
+            <label>Max Start Date<br /></label>
+            <input class="form-control" type="datetime-local" id="maximum" name="maximum" required="true" />
+            
+
+            <label>job Type</label>
+            @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
+            <label>priority</label>
+           @Html.DropDownList("priority" ,(IEnumerable<SelectListItem>)Session["PriorityList"])
                 
 
-                <label>Address</label>
-                <input class="form-control" type="text" id="address" name="address" />
-                
-                <label>Postal Code</label>
-                <input class="form-control" type="text" id="postalCode" name="postalCode" />
-                <label>Estimated Time in minutes</label>
-                <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" />
-                <input class="form-control" type="submit" value="submit" />
+            
+            <label>Work Area</label>
+            @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
+
+            <label>Address</label>
+            <input class="form-control" type="text" id="address" name="address"  required="true" />
+            <label>Postal Code</label>
+            <input class="form-control" type="text" id="postalCode" name="postalCode"  required="true" />
+            <label>Estimated Time</label>
+            <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" required="true" />
+            <input class="form-control" type="submit" value="submit" />
 
 
-            </form>
-            }
-           
+        </form>
+    }
+
     else if (Session["WorkOrderFormType"].ToString() == "Update")
     {
-        if (Session["WorkOrderCrud"] != null)
+        if (Session["workOrder"] != null)
         {
-            WorkOrder updateWorkOrder = (WorkOrder)Session["WorkOrderCrud"];
-            <form method="post" action="@Url.Action("CreateWorkOrder", "Display")">
+            WorkOrder updateWorkOrder = (WorkOrder)Session["workOrder"];
+            <form method="post" action="@Url.Action("updateWorkOrder", "Display")">
                 <label>Earliest Start Date</label>
                 <input class="form-control" type="datetime-local" id="minimum" name="minimum" value=updateWorkOrder.minimum_start_time/>
                 <label>Max Start Date<br/></label>
@@ -113,19 +115,21 @@
                <label>Current Max start date @Session["MaxDateTime"]</label>
                 
                 <label>job Type</label>
-                //<input class="form-control" type="radio" id="job" name="job" />
                 @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
                 <label>priority</label>
-                <input class="form-control" type="radio" id="priority" name="priority" />
+                <label>priority</label>
+                @Html.DropDownList("priority", (IEnumerable<SelectListItem>)Session["PriorityList"])
+                    
+                
                 <label>Work Area</label>
                 @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
 
                 <label>Address</label>
-                <input class="form-control" type="text" id="address" name="address" value="test" />
+                <input class="form-control" type="text" id="address" name="address" value=@updateWorkOrder.address required="true"/>
                 <label>Postal Code</label>
-                <input class="form-control" type="text" id="postalCode" name="postalCode" />
+                <input class="form-control" type="text" id="postalCode" name="postalCode"  value=@(updateWorkOrder.postal_code) required="true"/>
                 <label>Estimated Time</label>
-                <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" />
+                <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" value=@updateWorkOrder.estimated_time_minutes required="true"/>
                 <input class="form-control" type="submit" value="submit" />
 
 
@@ -133,28 +137,6 @@
         }
 
 
-            <form method="post" action="@Url.Action("CreateWorkOrder", "Display")">
-                <label>Start Date</label>
-                <input class="form-control" type="datetime-local" id="minimum" name="minimum" />
-                <label>End Date</label>
-                <input class="form-control" type="datetime-local" id="maximum" name="maximum" />
-
-                <label>job Type</label>
-                <input class="form-control" type="radio" id="job" name="job" />
-                <label>priority</label>
-                <input class="form-control" type="radio" id="priority" name="priority" />
-                <label>Work Area</label>
-                <input class="form-control" type="radio" id="workArea" name="workArea" />
-
-                <label>Address</label>
-                <input class="form-control" type="text" id="address" name="address" value="test" />
-                <label>Postal Code</label>
-                <input class="form-control" type="text" id="postalCode" name="postalCode" />
-                <label>Estimated Time</label>
-                <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" />
-                <input class="form-control" type="submit" value="submit" />
-
-
-            </form>
+         
             }
 </div>

@@ -16,7 +16,9 @@ namespace Sched.Models
         public int job_type_id { get; set; }
         public int estimated_time_minutes { get; set; }
         public DateTime created_At { get; set; }
+        [Timestamp]
         public byte[] modified_At { get; set; }
+
         public int work_order_id { get; set; }
 
     }
