@@ -66,6 +66,7 @@ namespace Sched.Controllers
                 requiredResources, availableRequiredResources);
 
             //Send Recommendations to view
+            Session["RecommendNav"] = "Recommended";
             return PartialView(recommendationsModel);
         }
 

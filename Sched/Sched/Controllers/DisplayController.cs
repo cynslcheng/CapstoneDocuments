@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
+using Sched.Controllers;
 
 namespace Sched.Controllers
 {
@@ -389,9 +390,17 @@ namespace Sched.Controllers
             //check jobcrew
             //this should change work order to bap when successful
 
-            //INSERT CALL TO CYNTHIA VALIDATION******
+
             Session["Error"] = null;
             Session["Success"] = null;
+
+            bool validateResource = ValidateTechnician(workOrderId, resourceId, startTime);
+            if (!validateResource)
+            {
+                Session["Error"] = "Resource already booked for this time, please try again";
+                return RedirectToAction("Index", "Home");
+            }
+
             WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             Job job = dbContext.job.Where(x => x.work_order_id == workOrderId).First();
             int updateId = dbContext.status.Where(x => x.name == "BAPP").First().Id;
@@ -466,7 +475,12 @@ namespace Sched.Controllers
             //check jobcrew
             //this should change work order to bap when successful
 
-            //INSERT CALL TO CYNTHIA VALIDATION
+            bool validateTechnician = ValidateTechnician(workOrderId, technicianId, startTime);
+            if (!validateTechnician)
+            {
+                Session["Error"] = "Technician already booked for this time, please try again";
+                return RedirectToAction("Index", "Home");
+            }
 
             WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             Job job = dbContext.job.Where(x => x.work_order_id == workOrderId).First();
@@ -633,6 +647,82 @@ namespace Sched.Controllers
         }
 
 
+
+        public bool ValidateTechnician(int workOrderId, int technicianId, DateTime requestedStartTime)
+        {
+            bool validate = false;
+
+            var techniciansToValidate = dbContext.job
+                .Join(dbContext.jobCrew, j => j.Id, jc => jc.jobId,
+                (j, jc) => new { Job = j, JobCrew = jc })
+                .Join(dbContext.crew_technician, jjc => jjc.JobCrew.crewId, ct => ct.crewid,
+                (jjc, ct) => new { JobJobCrew = jjc, CrewTechnician = ct })
+                .Select(s => new
+                {
+                    technicianId = s.CrewTechnician.technicianid,
+                    jobId = s.JobJobCrew.Job.Id,
+                    jobStartTime = s.JobJobCrew.JobCrew.start_time,
+                    jobEndTime = s.JobJobCrew.JobCrew.end_time,
+                    estimatedJobTimeMinutes = s.JobJobCrew.Job.estimated_time_minutes
+                }).ToList();
+
+            var technicianToValidate = techniciansToValidate
+                .Where(st => st.technicianId == technicianId
+                    && ((st.jobStartTime <= requestedStartTime
+                    && st.jobEndTime >= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
+                    || (st.jobStartTime <= requestedStartTime
+                    && st.jobEndTime <= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
+                    || (st.jobStartTime >= requestedStartTime
+                    && st.jobEndTime >= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
+                    || (st.jobStartTime >= requestedStartTime
+                    && st.jobEndTime <= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))))
+                .FirstOrDefault();
+            
+            if (technicianToValidate == null)
+            {
+                validate = true;
+            }
+
+            return validate;
+        }
+
+        public bool ValidateResource(int workOrderId, int resourceId, DateTime requestedStartTime)
+        {
+            bool validate = false;
+
+            var resourcesToValidate = dbContext.job
+                .Join(dbContext.jobCrew, j => j.Id, jc => jc.jobId,
+                (j, jc) => new { Job = j, JobCrew = jc })
+                .Join(dbContext.crew_resources, jjc => jjc.JobCrew.crewId, cr => cr.crewID,
+                (jjc, cr) => new { JobJobCrew = jjc, CrewResource = cr })
+                .Select(s => new
+                {
+                    resourceId = s.CrewResource.resourcesid,
+                    jobId = s.JobJobCrew.Job.Id,
+                    jobStartTime = s.JobJobCrew.JobCrew.start_time,
+                    jobEndTime = s.JobJobCrew.JobCrew.end_time,
+                    estimatedJobTimeMinutes = s.JobJobCrew.Job.estimated_time_minutes
+                }).ToList();
+
+            var resourceToValidate = resourcesToValidate
+                .Where(rtv => rtv.resourceId == resourceId
+                    && ((rtv.jobStartTime <= requestedStartTime
+                    && rtv.jobEndTime >= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
+                    || (rtv.jobStartTime <= requestedStartTime
+                    && rtv.jobEndTime <= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
+                    || (rtv.jobStartTime >= requestedStartTime
+                    && rtv.jobEndTime >= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
+                    || (rtv.jobStartTime >= requestedStartTime
+                    && rtv.jobEndTime <= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))))
+                .FirstOrDefault();
+
+            if (resourceToValidate.jobId != 0 )
+            {
+                validate = true;
+            }
+
+            return validate;
+        }
 
     }
 }
