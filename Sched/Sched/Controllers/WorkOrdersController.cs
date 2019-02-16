@@ -31,6 +31,8 @@ namespace Sched.Controllers
             {
                 var query = "SELECT * FROM work_order WHERE " + searchField + " = " + searchValue;
                 workOrdersList = db.WorkOrder.SqlQuery(query).ToList();
+                Session["searchField"] = null;
+                Session["searchValue"] = null;
             }
             else
             {
