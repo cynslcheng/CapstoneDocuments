@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Mvc;
-using Sched.Controllers;
 
 namespace Sched.Controllers
 {
@@ -18,24 +17,18 @@ namespace Sched.Controllers
         SchedContext dbContext = new SchedContext();
 
 
-        public ActionResult Index()
-        {
-            dbContext.jobTypes.Select(x => new { Id = x.Id, Type = x.name });
-            //  ViewBag.Test = "Hello";
 
-            return View();
-        }
+
         /// <summary>
-        /// create new work order
+        /// Populates new work order form
         /// </summary>
         /// <returns></returns>
 
-
-
         public ActionResult NewWorkOrder()
         {
-            Session["WorkOrderFormType"] = "Create";
-
+            SetSessionMessages("WorkOrderFormType", "Create");
+            SetSessionMessages("Success", "");
+            SetSessionMessages("Error", "");
             WorkOrder workOrder = new WorkOrder();
             workOrder.maximum_start_time = DateTime.Now;
             workOrder.minimum_start_time = DateTime.Now;
@@ -60,15 +53,21 @@ namespace Sched.Controllers
         public ActionResult SelectWorkOrder()
         {
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
-            Session["WorkOrderFormType"] = "Select";
+
+
+            SetSessionMessages("WorkOrderFormType", "Select");
 
             //incase work order has been changed in between dispatcher clicking and when this method is called
             //workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrder.Id).First();
             Session["SelectedWorkOrder"] = workOrder;
-            Session["Error"] = null;
-            Session["Success"] = null;
+            SetSessionMessages("workOrder", "");
+            SetSessionMessages("Success", "");
+            SetSessionMessages("Error", "");
             return View(workOrder);
         }
+        /// <summary>
+        /// Populates select Lists for job types, priority, and work area
+        /// </summary>
         private void populateSelectList()
         {
 
@@ -87,10 +86,10 @@ namespace Sched.Controllers
                 priority = dbContext.WorkOrder.Where(x => x.Id == workOrder.Id).First().priority;
 
             }
-            List<SelectListItem> priorityList= new List<SelectListItem>();
+            List<SelectListItem> priorityList = new List<SelectListItem>();
             for (int i = 1; i < 5; i++)
             {
-                if (i==priority)
+                if (i == priority)
                 {
                     priorityList.Add(new SelectListItem { Text = i.ToString(), Value = i.ToString(), Selected = true });
                 }
@@ -131,49 +130,32 @@ namespace Sched.Controllers
             Session["PriorityList"] = priorityList;
         }
 
-        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string houseNumber,string street, string postalCode, int estimatedTime)
+        /// <summary>
+        /// If creates messages for user depending on if the work order was created or not
+        /// </summary>
+        /// <param name="minimum"></param>
+        /// <param name="maximum"></param>
+        /// <param name="priority"></param>
+        /// <param name="jobType"></param>
+        /// <param name="workArea"></param>
+        /// <param name="houseNumber"></param>
+        /// <param name="street"></param>
+        /// <param name="postalCode"></param>
+        /// <param name="estimatedTime"></param>
+        /// <returns></returns>
+        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
         {
-            Session["Error"] = null;
-            Session["Success"] = null;
-            //use model binding https://www.completecsharptutorial.com/mvc-articles/4-ways-to-collect-form-data-in-controller-class-in-asp-net-mvc-5.php
-            //if (ValidateWorkOrder(workOrder))
-            int statusId = dbContext.status.Where(x => x.name == "WSCHED").First().Id;
-            WorkOrder workOrder = new WorkOrder();
-            
-            if (validateWorkOrder(minimum, maximum, street,houseNumber, postalCode, estimatedTime))
+
+            if (validateWorkOrder(minimum, maximum, street, houseNumber, postalCode, estimatedTime))
             {
                 try
                 {
-                    workOrder.maximum_start_time = maximum;
-                    workOrder.minimum_start_time = minimum;
-                    workOrder.created_at = DateTime.Now;
-                    workOrder.priority = Convert.ToInt32(priority);
-                    workOrder.work_area_id = workArea;
-                    workOrder.status_id = statusId;
-                    workOrder.address = houseNumber + " " +street;
-                    workOrder.postal_code = postalCode;
-
-                    //check that dates are in the future
-                    Job job = new Job();
-                    job.job_type_id = jobType;
-                    job.created_At = DateTime.Now;
-                    job.estimated_time_minutes = estimatedTime;
-
-                    //validateWorkOrder()
-
-                    dbContext.WorkOrder.Add(workOrder);
-                    dbContext.SaveChanges();
-
-                    int lastId = dbContext.WorkOrder.OrderByDescending(p => p.Id).FirstOrDefault().Id;
-                    job.work_order_id = lastId;
-                    job.status_id = statusId;
-                    dbContext.job.Add(job);
 
                     //this will work when constraints on database are changed
-                    Session["WorkOrderFormType"] = null;
-                    Session["NewWorkOrder"] = null;
-                    dbContext.SaveChanges();
-                    Session["Success"] = "Work order Created";
+                    SetSessionMessages("WorkOrderFormType", "");
+                    SetSessionMessages("NewWorkOrder", "");
+                    SetSessionMessages("Success", "Work order Created");
+
                 }
                 catch (Exception e)
                 {
@@ -185,13 +167,70 @@ namespace Sched.Controllers
             }
             else
             {
-                Session["workOrder"] = workOrder;
+                Session["workOrder"] = null;
                 return RedirectToAction("Index", "Home");
 
-                //ViewBag.Error=""
+
             }
             return RedirectToAction("Index", "Home");
             //        ViewBag.WorkOrder = workOrder;
+
+        }
+        /// <summary>
+        /// Inserts workorder model into database
+        /// returns true if successful
+        /// </summary>
+        /// <param name="minimum"></param>
+        /// <param name="maximum"></param>
+        /// <param name="priority"></param>
+        /// <param name="jobType"></param>
+        /// <param name="workArea"></param>
+        /// <param name="houseNumber"></param>
+        /// <param name="street"></param>
+        /// <param name="postalCode"></param>
+        /// <param name="estimatedTime"></param>
+        /// <returns></returns>
+        public bool successfulCreate(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
+        {
+            try
+            {
+                int statusId = dbContext.status.Where(x => x.name == "WSCHED").First().Id;
+                WorkOrder workOrder = new WorkOrder();
+
+                workOrder.maximum_start_time = maximum;
+                workOrder.minimum_start_time = minimum;
+                workOrder.created_at = DateTime.Now;
+                workOrder.priority = Convert.ToInt32(priority);
+                workOrder.work_area_id = workArea;
+                workOrder.status_id = statusId;
+                workOrder.address = houseNumber + " " + street;
+                workOrder.postal_code = postalCode;
+                workOrder.estimated_time_minutes = estimatedTime;
+                //check that dates are in the future
+                Job job = new Job();
+                job.job_type_id = jobType;
+                job.created_At = DateTime.Now;
+                job.estimated_time_minutes = estimatedTime;
+
+                //validateWorkOrder()
+
+                dbContext.WorkOrder.Add(workOrder);
+                dbContext.SaveChanges();
+
+                int lastId = dbContext.WorkOrder.OrderByDescending(p => p.Id).FirstOrDefault().Id;
+                job.work_order_id = lastId;
+                job.status_id = statusId;
+                dbContext.job.Add(job);
+                dbContext.SaveChanges();
+                return true;
+            }
+            catch (Exception e)
+            {
+
+                Session["Error"] = "Error creating work order: " + e.Message;
+                return false;
+            }
+
 
         }
         public ActionResult update()
@@ -200,8 +239,8 @@ namespace Sched.Controllers
             Session["Success"] = null;
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
             int workOrderId = workOrder.Id;
-            workOrder.postal_code=workOrder.postal_code.Replace(' ', '-');
-            workOrder.address=workOrder.address;
+            workOrder.postal_code = workOrder.postal_code.Replace(' ', '-');
+            workOrder.address = workOrder.address;
             //WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             Session["WorkOrderFormType"] = "Update";
             //Session["workOrder"] = workOrder;
@@ -218,7 +257,7 @@ namespace Sched.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        public ActionResult updateWorkOrder(DateTime? minimum, DateTime? maximum, string priority, int jobType, int workArea, string street,string houseNumber, string postalCode, int estimatedTime)
+        public ActionResult updateWorkOrder(DateTime? minimum, DateTime? maximum, string priority, int jobType, int workArea, string street, string houseNumber, string postalCode, int estimatedTime)
         {
             Session["Error"] = null;
             Session["Success"] = null;
@@ -244,33 +283,21 @@ namespace Sched.Controllers
             }
 
             // validateWorkOrder(minimum, maximum, priority, jobType, workArea, status, address, postalCode, estimatedTime);
-            if (validateWorkOrder(minDate, maxDate, street,houseNumber, postalCode, estimatedTime) == true)
+            if (validateWorkOrder(minDate, maxDate, street, houseNumber, postalCode, estimatedTime) == true)
             {
                 try
                 {
-                    WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == oldWorkOrder.Id).FirstOrDefault();
-                    workOrder.minimum_start_time = minDate;
-                    workOrder.maximum_start_time = maxDate;
-                    workOrder.priority = Convert.ToInt32(priority);
-                    workOrder.work_area_id = workArea;
-                    workOrder.address = houseNumber +" "+street;
-                    workOrder.postal_code = postalCode;
-                    workOrder.estimated_time_minutes = estimatedTime;
-                    Job job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First();
-                    job.job_type_id = jobType;
-                    dbContext.Entry(job).State = System.Data.Entity.EntityState.Modified;
-                    dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
-                    dbContext.SaveChanges();
-                    Session["Success"] = "Work order updated!";
-                    
-                    Session["WorkOrderFormType"] = null;
-                    Session["workOrder"] = null;
+                    successfulUpdate(oldWorkOrder.Id, minDate, maxDate, priority, jobType, workArea, street, houseNumber, postalCode, estimatedTime);
+                    SetSessionMessages("Success", "Work order updated!");
+                    SetSessionMessages("WorkOrderFormType", "");
+                    SetSessionMessages("workOrder", "");
+
                     return RedirectToAction("Index", "Home");
                 }
                 catch (Exception e)
                 {
+                    SetSessionMessages("Error", "Unexpected error occured: " + e.Message);
 
-                    Session["Error"] = "Unexpected error occured: " + e.Message;
                     return RedirectToAction("Index", "Home");
                 }
             }
@@ -286,7 +313,60 @@ namespace Sched.Controllers
             // return View("index");
 
         }
+        /// <summary>
+        /// Updates work order in the database
+        /// returns true if succesful
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="minDate"></param>
+        /// <param name="maxDate"></param>
+        /// <param name="priority"></param>
+        /// <param name="jobType"></param>
+        /// <param name="workArea"></param>
+        /// <param name="houseNumber"></param>
+        /// <param name="street"></param>
+        /// <param name="postalCode"></param>
+        /// <param name="estimatedTime"></param>
+        /// <returns></returns>
+        public bool successfulUpdate(int id, DateTime minDate, DateTime maxDate, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
+        {
+            try
+            {
+                WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == id).FirstOrDefault();
+                workOrder.minimum_start_time = minDate;
+                workOrder.maximum_start_time = maxDate;
+                workOrder.priority = Convert.ToInt32(priority);
+                workOrder.work_area_id = workArea;
+                workOrder.address = houseNumber + " " + street;
+                workOrder.postal_code = postalCode;
+                workOrder.status_id = 1;
+                workOrder.estimated_time_minutes = estimatedTime;
+                Job job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First();
+                job.job_type_id = jobType;
+                dbContext.Entry(job).State = System.Data.Entity.EntityState.Modified;
+                dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                dbContext.SaveChanges();
 
+                return true;
+            }
+            catch (Exception e)
+            {
+                SetSessionMessages("Error", "Error update work order: " + e.Message);
+
+                return false;
+
+            }
+        }
+        /// <summary>
+        /// validates the user created model
+        /// </summary>
+        /// <param name="minimum"></param>
+        /// <param name="maximum"></param>
+        /// <param name="street"></param>
+        /// <param name="houseNumber"></param>
+        /// <param name="postalCode"></param>
+        /// <param name="estimatedTime"></param>
+        /// <returns></returns>
         public bool validateWorkOrder(DateTime minimum, DateTime maximum, string street, string houseNumber, string postalCode, int estimatedTime)
         {
             string validationExpression = @"^[ABCEGHJ-NPRSTVXY]{1}[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[ ]?[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[0-9]{1}$";
@@ -294,16 +374,16 @@ namespace Sched.Controllers
 
             Regex regex = new Regex(validationExpression, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             var matches = Regex.Match(postalCode, validationExpression);
-            if (postalCode.Trim()=="")
+            if (postalCode.Trim() == "")
             {
                 Session["Error"] += "Invalid Postal Code";
                 return false;
             }
             else
             {
-              postalCode=  postalCode.Replace('-', ' ');
+                postalCode = postalCode.Replace('-', ' ');
             }
-            if (estimatedTime<1)
+            if (estimatedTime < 1)
             {
                 Session["Error"] += "A job can't be less than 1 minute!<br/>";
                 return false;
@@ -333,7 +413,7 @@ namespace Sched.Controllers
                 Session["Error"] += "Invalid House Number<br/>";
                 return false;
             }
-           
+
             if (regex.IsMatch(postalCode.Trim()) == false)
             {
                 Session["Error"] += "Invalid Postal Code";
@@ -341,48 +421,84 @@ namespace Sched.Controllers
             }
             return true;
         }
+        /// <summary>
+        /// populates cancel form
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Cancel()
         {
-            Session["Error"] = null;
-            Session["Success"] = null;
-            Session["WorkOrderFormType"] = "Cancel";
+            SetSessionMessages("Error", "");
+            SetSessionMessages("Success", "");
+            SetSessionMessages("WorkOrderFormType", "Cancel");
+
+
             //WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == id).FirstOrDefault();
-            Session["WorkOrderFormType"] = "Cancel";
+
             return RedirectToAction("index", "Home");
             // Session["WorkOrderCrud"] = workOrder;
             //get confirmation message
         }
+        /// <summary>
+        /// Pulls database information to be used for 
+        /// isSuccessfulCancel method
+        ///
+        /// </summary>
+        /// <returns></returns>
         public ActionResult cancelWorkOrder()
         {
-            Session["Error"] = null;
-            Session["Success"] = null;
+            SetSessionMessages("Error", "");
+            SetSessionMessages("Success", "");
+
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
             int cancelStatus = dbContext.status.Where(x => x.name.ToLower().Equals("cancelled")).FirstOrDefault().Id;
-            workOrder.status_id = cancelStatus;
-            IEnumerable<Job> jobs = dbContext.job.Where(x => x.work_order_id == workOrder.Id);
-            foreach (Job job in jobs)
+
+            if (isSuccesfulCancel(workOrder, cancelStatus))
             {
-                job.status_id = cancelStatus;
-                dbContext.Entry(job).State = System.Data.Entity.EntityState.Modified;
+                SetSessionMessages("WorkOrderFormType", "");
+                SetSessionMessages("workOrder", "");
+                SetSessionMessages("Success", "Work Order Cancelled");
             }
-            dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
-            dbContext.SaveChanges();
-            Session["WorkOrderFormType"] = null;
-            Session["workOrder"] = null;
-            return View("index", "Home");
+
+
+            return RedirectToAction("Index", "Home");
+        }
+        /// <summary>
+        /// Changes workorder status to cancel in database
+        /// returns true if successful
+        /// </summary>
+        /// <param name="workOrder"></param>
+        /// <param name="cancelStatus"></param>
+        /// <returns></returns>
+        public bool isSuccesfulCancel(WorkOrder workOrder, int cancelStatus)
+        {
+            try
+            {
+                workOrder.status_id = cancelStatus;
+                IEnumerable<Job> jobs = dbContext.job.Where(x => x.work_order_id == workOrder.Id);
+                foreach (Job job in jobs)
+                {
+                    job.status_id = cancelStatus;
+                    dbContext.Entry(job).State = System.Data.Entity.EntityState.Modified;
+                }
+                dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                dbContext.SaveChanges();
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            return true;
         }
 
-        //need cynthia code
-        //public bool TimeCheckTechnician()
-        //{
-        //    return false;
-        //}
-        //public bool TimeCheckResource()
-        //{
-        //    return false;
-        //}
-        ////
-
+        /// <summary>
+        /// Grabs data for the isSucccessfulAssignResource method
+        /// </summary>
+        /// <param name="workOrderId"></param>
+        /// <param name="resourceId"></param>
+        /// <param name="startTime"></param>
+        /// <returns></returns>
         public ActionResult AssignResource(int workOrderId, int resourceId, DateTime startTime)
         {
             //when the list of workorders is up and running 
@@ -401,9 +517,29 @@ namespace Sched.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
+            //INSERT CALL TO CYNTHIA VALIDATION******
+            SetSessionMessages("Error", "");
+            SetSessionMessages("Success", "");
+
             WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
-            Job job = dbContext.job.Where(x => x.work_order_id == workOrderId).First();
+            isSuccesfulAssignResource(workOrder, resourceId, startTime);
+
+
+            return RedirectToAction("Index", "Home");
+            //  return View("Index");
+        }
+        /// <summary>
+        /// assigns a resource in the database
+        /// returns true if successful
+        /// </summary>
+        /// <param name="workOrder"></param>
+        /// <param name="resourceId"></param>
+        /// <param name="startTime"></param>
+        /// <returns></returns>
+        public bool isSuccesfulAssignResource(WorkOrder workOrder, int resourceId, DateTime startTime)
+        {
             int updateId = dbContext.status.Where(x => x.name == "BAPP").First().Id;
+            Job job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First();
             try
             {
                 if (dbContext.jobCrew.Where(x => x.jobId == job.Id).Count() != 0)
@@ -455,26 +591,71 @@ namespace Sched.Controllers
                     dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
                     dbContext.SaveChanges();
                 }
-
+                return true;
             }
             catch (Exception e)
             {
+                SetSessionMessages("Error", e.Message);
+                return false;
 
-                Session["Error"] = e.Message;
             }
-            return RedirectToAction("Index", "Home");
-            //  return View("Index");
+        }
+        /// <summary>
+        /// Populates session variables with a string
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="message"></param>
+        public void SetSessionMessages(string name, string message)
+        {
+            if (message == "")
+            {
+                message = null;
+            }
+            Session[name] = message;
         }
 
+        /// <summary>
+        /// grabs information for isSuccessfulAssignTechnician
+        /// </summary>
+        /// <param name="workOrderId"></param>
+        /// <param name="technicianId"></param>
+        /// <param name="startTime"></param>
+        /// <returns></returns>
         public ActionResult AssignTechnician(int workOrderId, int technicianId, DateTime startTime)
         {
-            Session["Error"] = null;
-            Session["Success"] = null;
-            //when the list of workorders is up and running 
-            //dbContext.crewTechnician()
-            //check jobcrew
-            //this should change work order to bap when successful
+            SetSessionMessages("Success", "");
+            SetSessionMessages("Error", "");
 
+            WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
+            var notCompletedStatus = new List<String> { "completed", "cancelled", "deleted" };
+            IQueryable<Status> notCompletedStatusIds = dbContext.status.Where(x => notCompletedStatus.Contains(x.description));
+            foreach (Status notCompleteId in notCompletedStatusIds)
+            {
+                if (notCompleteId.Id == workOrder.status_id)
+                {
+                    SetSessionMessages("Error", "This work order is already cancelled, deleted or completed");
+                    return RedirectToAction("index", "Home");
+                }
+            }
+
+            if (isSuccessfulAssignTechnician(workOrder, technicianId, startTime) == true)
+            {
+                SetSessionMessages("Success", "Technician Added");
+            }
+
+            return RedirectToAction("index", "Home");
+        }
+
+        /// <summary>
+        /// Assigns technician to a work order
+        /// returns true if successful
+        /// </summary>
+        /// <param name="workOrder"></param>
+        /// <param name="technicianId"></param>
+        /// <param name="startTime"></param>
+        /// <returns></returns>
+        public bool isSuccessfulAssignTechnician(WorkOrder workOrder, int technicianId, DateTime startTime)
+        {
             bool validateTechnician = ValidateTechnician(workOrderId, technicianId, startTime);
             if (!validateTechnician)
             {
@@ -482,8 +663,7 @@ namespace Sched.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
-            Job job = dbContext.job.Where(x => x.work_order_id == workOrderId).First();
+            Job job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First();
             int updateId = dbContext.status.Where(x => x.name == "BAPP").First().Id;
             if (dbContext.jobCrew.Where(x => x.jobId == job.Id).Count() != 0)
             {
@@ -500,60 +680,69 @@ namespace Sched.Controllers
                     workOrder.status_id = updateId;
                     dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
                     dbContext.SaveChanges();
+                    return true;
                 }
                 catch (Exception e)
                 {
 
-                    Session["Error"] = "SQL Server error: " + e.Message;
+                    SetSessionMessages("Error", "Server error: " + e.Message);
+                    return false;
                 }
 
             }
             else
             {
+                try
+                {
+                    Crew crew = new Crew();
+                    crew.work_area_id = workOrder.work_area_id;
+                    crew.start_Time = startTime;
+                    crew.end_Time = startTime.AddMinutes(job.estimated_time_minutes);
+                    //crew.work_area_id
+                    crew.created_at = DateTime.Now;
+                    dbContext.crew.Add(crew);
+                    dbContext.SaveChanges();
 
+                    JobCrew jobCrew = new JobCrew();
+                    jobCrew.jobId = job.Id;
+                    jobCrew.crewId = dbContext.crew.OrderByDescending(x => x.Id).FirstOrDefault().Id;
+                    jobCrew.created_at = DateTime.Now;
+                    jobCrew.start_time = startTime;
+                    jobCrew.end_time = startTime.AddMinutes(job.estimated_time_minutes);
+                    jobCrew.status_id = workOrder.status_id;
+                    dbContext.jobCrew.Add(jobCrew);
+                    dbContext.SaveChanges();
+
+                    CrewTechnician cT = new CrewTechnician();
+                    cT.technicianid = technicianId;
+                    cT.crewid = jobCrew.crewId;
+                    dbContext.crew_technician.Add(cT);
+                    workOrder.status_id = updateId;
+                    dbContext.SaveChanges();
+                    return true;
+                }
+                catch (Exception e)
+                {
+
+                    SetSessionMessages("Error", "Server error: " + e.Message);
+                    return false;
+                }
                 //check if crews exist for this job
-                Crew crew = new Crew();
-                crew.work_area_id = workOrder.work_area_id;
-                crew.start_Time = startTime;
-                crew.end_Time = startTime.AddMinutes(job.estimated_time_minutes);
-                //crew.work_area_id
-                crew.created_at = DateTime.Now;
-                dbContext.crew.Add(crew);
-                dbContext.SaveChanges();
-
-                JobCrew jobCrew = new JobCrew();
-                jobCrew.jobId = job.Id;
-                jobCrew.crewId = dbContext.crew.OrderByDescending(x => x.Id).FirstOrDefault().Id;
-                jobCrew.created_at = DateTime.Now;
-                jobCrew.start_time = startTime;
-                jobCrew.end_time = startTime.AddMinutes(job.estimated_time_minutes);
-                jobCrew.status_id = workOrder.status_id;
-                dbContext.jobCrew.Add(jobCrew);
-                dbContext.SaveChanges();
-
-                CrewTechnician cT = new CrewTechnician();
-                cT.technicianid = technicianId;
-                cT.crewid = jobCrew.crewId;
-                dbContext.crew_technician.Add(cT);
-                workOrder.status_id = updateId;
-                dbContext.SaveChanges();
-
-
 
             }
-
-            return RedirectToAction("index", "Home");
         }
-
-
-
+        /// <summary>
+        /// Grabs all variables needed for isSuccessfulBook from database
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Book()
         {
             //
             // validateWorkOrder(DateTime.Now, maxDay, 1, 1, 7, 34, "111 test ave", "n2n 1n1", 30);
             //string address, string postalCode, int estimatedTime
-            Session["Error"] = null;
-            Session["Success"] = null;
+            SetSessionMessages("Success", "");
+            SetSessionMessages("Error", "");
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
 
 
@@ -625,26 +814,48 @@ namespace Sched.Controllers
 
                 if (Session["Error"] == null)
                 {
-                    int updateStatus = dbContext.status.Where(x => x.name == "DIS").FirstOrDefault().Id;
+                    if (isSuccessfulBook(job.Id, workOrder, jobs))
+                    {
+                        SetSessionMessages("Success", "Work order Dispatched");
+                        SetSessionMessages("WorkOrder", "");
+                    }
 
-                    var crews = dbContext.jobCrew.Where(x => x.jobId == job.Id).ToList();
-                    crews.ForEach(x => x.status_id = updateStatus);
-
-                    var jobList = jobs.ToList();
-                    jobList.ForEach(x => x.status_id = updateStatus);
-                    workOrder.status_id = updateStatus;
-                    dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
-                    dbContext.SaveChanges();
-                    Session["Success"] = "Work order Dispatched";
-                    workOrder = null;
                 }
             }
 
-            //figure out how to check if a job has technician that meets the requirements
-            //update the status of the work order
 
             return RedirectToAction("Index", "Home");
         }
+        /// <summary>
+        /// Changes the statuses of the job crew, job and work order to dispatched
+        /// returns true if successful
+        /// </summary>
+        /// <param name="jobId"></param>
+        /// <param name="workOrder"></param>
+        /// <param name="jobs"></param>
+        /// <returns></returns>
+        public bool isSuccessfulBook(int jobId, WorkOrder workOrder, IEnumerable<Job> jobs)
+        {
+            try
+            {
+                int updateStatus = dbContext.status.Where(x => x.name == "DIS").FirstOrDefault().Id;
+
+                var crews = dbContext.jobCrew.Where(x => x.jobId == jobId).ToList();
+                crews.ForEach(x => x.status_id = updateStatus);
+
+                var jobList = jobs.ToList();
+                jobList.ForEach(x => x.status_id = updateStatus);
+                workOrder.status_id = updateStatus;
+                dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                dbContext.SaveChanges();
+                return true;
+            }
+            catch (Exception e)
+            {
+
+                SetSessionMessages("Error", "Error booking: " + e.Message);
+                return false;
+            }
 
 
 
