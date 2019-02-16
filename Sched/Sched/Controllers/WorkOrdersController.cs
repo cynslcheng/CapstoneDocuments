@@ -23,14 +23,16 @@ namespace Sched.Controllers
             string searchField = Session["searchField"] as string;
             string searchValue = Session["searchValue"] as string;
             List<WorkOrder> workOrdersList = null;
-            if (workOrder == null && (searchField == null || searchValue == null))
+            if (workOrder == null && (searchField == null || searchValue == null || searchValue == ""))
             {
                 workOrdersList = db.WorkOrder.ToList();
             }
-            else if (searchField != null && searchValue != null)
+            else if (searchField != null && searchValue != null && searchValue != "")
             {
                 var query = "SELECT * FROM work_order WHERE " + searchField + " = " + searchValue;
                 workOrdersList = db.WorkOrder.SqlQuery(query).ToList();
+                Session["searchField"] = null;
+                Session["searchValue"] = null;
             }
             else
             {
@@ -161,9 +163,12 @@ namespace Sched.Controllers
             {
                 return HttpNotFound();
             }
+            Session["workOrder"] = workOrder;
+            Session["WorkOrderFormType"] = "Select";
             Session["workOrderID"] = workOrder.Id;
             Job job = await db.job.FirstAsync(j => j.work_order_id == workOrder.Id);
             Session["WOHeader"] = new WOHeader { word_order_id = workOrder.Id, customer_number = 1, job_type = job.job_type_id };
+
             return RedirectToAction("Index", "Home");
         }
 
