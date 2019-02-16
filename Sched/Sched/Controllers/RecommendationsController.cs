@@ -15,19 +15,22 @@ namespace Sched.Controllers
     {
         private SchedContext dbContext = new SchedContext();
 
-        // GET: Recommendations
-        /*  In order of steps for recommendations:
-        *   a job requirements
-        *   b technician availability
-        *   c resource requirements
-        *   d geographic proximity of preceding job site
-        *   e geographic proximity of project work
-        *   f gamification incentives
-        *  eligible technician and resource rows should 
-        *  be colour coded to indicate their proximity from their previous job site 
-        *  (ex. the closest technician would have a dark green colour, the next-closest a lighter green etc...)
-        *  **Ideally update to use stored procedures
-        */
+        /// <summary>
+        /// Calculates and displays technicians and resources in a partial view when a work order is selected
+        /// 
+        ///  In order of steps for recommendations:
+        /// * a job requirements
+        /// * b technician availability
+        /// * c resource requirements
+        /// * d geographic proximity of preceding job site
+        /// * e geographic proximity of project work
+        /// * f gamification incentives
+        /// * eligible technician and resource rows should
+        /// * be colour coded to indicate their proximity from their previous job site
+        /// * (ex.the closest technician would have a dark green colour, the next-closest a lighter green etc...)
+        /// </summary>
+        /// <param name="wOHeader">contains the selected work order, job type, and customer id (currently not available) </param>
+        /// <returns>Model containing technicians, resources, and reccomendations to be assigned to work order</returns>
         [ChildActionOnly]
         public ActionResult _ReccomendationsPartial(WOHeader wOHeader)
         {
@@ -70,6 +73,13 @@ namespace Sched.Controllers
             return PartialView(recommendationsModel);
         }
 
+        /// <summary>
+        /// Checks for technicians who have the skills to complete the work order
+        /// </summary>
+        /// <param name="job">Contains job information</param>
+        /// <param name="jobTypes">Contains job types information</param>
+        /// <param name="technicians">List of all technicians working in the work order's dispatch area</param>
+        /// <returns>List of technicians that meet the skills required to complete work order</returns>
         private List<Technician> GetEligibleTechnicians(Job job, List<JobTypes> jobTypes, List<Technician> technicians)
         {
             //Get list of available technicians
@@ -121,6 +131,14 @@ namespace Sched.Controllers
             return eligibleTechnicians;
         }
 
+        /// <summary>
+        /// Checks eligible technicians for their availability
+        /// *Currently only checks if they aren't working on the specified day,
+        /// all eligible technicians are still able to be selected from all technicians
+        /// </summary>
+        /// <param name="eligibleTechnicians">List of all technicians who meet the skills required to complete work order</param>
+        /// <returns>List of all technicians who are available during the work orders
+        /// desired time range (currently only check if work is scheduled for that day)</returns>
         private List<Technician> GetAvailableTechnicians(List<Technician> eligibleTechnicians)
         {
             //Filter eligible technicians for availability
@@ -152,6 +170,13 @@ namespace Sched.Controllers
             return availableTechnicians;
         }
 
+        /// <summary>
+        /// Checks what resources are required to complete the requested work order
+        /// </summary>
+        /// <param name="job">Contains job information required to complete work order</param>
+        /// <param name="jobTypes">Contains job types informamtion required to complete work order</param>
+        /// <param name="resources">List of all resources in a work area</param>
+        /// <returns>List of resources required to complete work order</returns>
         private List<Resources> GetRequiredResources(Job job, 
             List<JobTypes> jobTypes, 
             List<Resources> resources)
@@ -184,6 +209,14 @@ namespace Sched.Controllers
             return requiredResources;
         }
 
+        /// <summary>
+        /// Checks if eligible resources are available to be booked during desired time period
+        /// *Currently only checks if the resource is already working on the specified day,
+        /// all eligible resources are still able to be selected from all resources
+        /// </summary>
+        /// <param name="requiredResources">List of resources required to complete work order, filtered by dispatch area</param>
+        /// <returns>List of available resources required to complete work order. Currently only
+        /// checks on if a resource is scheduled for the same day</returns>
         private List<Resources> GetAvailableResources(List<Resources> requiredResources)
         {
             List<Resources> availableEligibleResources = new List<Resources>();
@@ -216,6 +249,17 @@ namespace Sched.Controllers
             return availableEligibleResources;
         }
 
+        /// <summary>
+        /// Creates a model containing available technicians, available resources, and recommended
+        /// resources and technicians
+        /// </summary>
+        /// <param name="wordOrder">work order that was selected</param>
+        /// <param name="technicians">List of all technicians in a dispatch area</param>
+        /// <param name="eligibleTechnicians">List of all technicians meeting skills required for work order</param>
+        /// <param name="availableEligibleTechnicians">List of all available eligible technicians (currently recommended)</param>
+        /// <param name="requiredResources">List of all resources in a dispatch area that are required for work order</param>
+        /// <param name="availableRequiredResources">List of all available eligible resources (currently recommended)</param>
+        /// <returns>model to be sent to view containing technicians and resources</returns>
         private Recommendations CreateReccomendationsModel(WorkOrder wordOrder,
             List<Technician> technicians, 
             List<Technician> eligibleTechnicians, 
@@ -244,6 +288,14 @@ namespace Sched.Controllers
             return recommendationsModel;
         }
         
+        /// <summary>
+        /// Adds a reccomendation level to technicians to help front end
+        /// determine coloring (not yet implemented on front end)
+        /// </summary>
+        /// <param name="technicians">All technicians in a dispatch area</param>
+        /// <param name="eligibleTechnicians">All technicians in a dispatch area that are eligible for the work order</param>
+        /// <param name="availableEligibleTechnicians">Available technicians (currently reccomended)</param>
+        /// <returns>List of all technicians with a recommendation level associated to each technician</returns>
         private IQueryable<TechniciansList> CreateAllTechniciansList(List<Technician> technicians, 
             List<Technician> eligibleTechnicians, 
             List<Technician> availableEligibleTechnicians)
@@ -287,7 +339,13 @@ namespace Sched.Controllers
             return queryableTechniciansList;
         }
 
-
+        /// <summary>
+        /// Adds a reccomendation level to resources to help front end
+        /// determine coloring (not yet implemented on front end)
+        /// </summary>
+        /// <param name="requiredResources">All resources in dispatch area that required for the work order</param>
+        /// <param name="availableRequiredResources">Available resources (currently reccomended)</param>
+        /// <returns>List of all resources with a recommendation level associated to each resource</returns>
         private IQueryable<ResourcesList> CreateAllRequiredResources(List<Resources> requiredResources,
             List<Resources> availableRequiredResources)
         {
@@ -318,6 +376,10 @@ namespace Sched.Controllers
             return queryableResourcesList;
         }
 
+        /// <summary>
+        /// C#'s built in clean up functionality
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

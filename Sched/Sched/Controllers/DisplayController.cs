@@ -860,6 +860,13 @@ namespace Sched.Controllers
 
         }
 
+        /// <summary>
+        /// Validates if a technician is already booked for the requested time
+        /// </summary>
+        /// <param name="workOrderId"></param>
+        /// <param name="technicianId"></param>
+        /// <param name="requestedStartTime"></param>
+        /// <returns></returns>
         public bool ValidateTechnician(int workOrderId, int technicianId, DateTime requestedStartTime)
         {
             bool validate = false;
@@ -899,6 +906,13 @@ namespace Sched.Controllers
             return validate;
         }
 
+        /// <summary>
+        /// Validates if a resource is already booked for the requested time
+        /// </summary>
+        /// <param name="workOrderId"></param>
+        /// <param name="resourceId"></param>
+        /// <param name="requestedStartTime"></param>
+        /// <returns></returns>
         public bool ValidateResource(int workOrderId, int resourceId, DateTime requestedStartTime)
         {
             bool validate = false;
