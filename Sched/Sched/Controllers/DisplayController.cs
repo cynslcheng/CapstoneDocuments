@@ -634,7 +634,7 @@ namespace Sched.Controllers
         public bool ValidateTechnician(int workOrderId, int technicianId, DateTime requestedStartTime)
         {
             bool validate = false;
-            
+
             var techniciansToValidate = dbContext.job
                 .Join(dbContext.jobCrew, j => j.Id, jc => jc.jobId,
                 (j, jc) => new { Job = j, JobCrew = jc })
@@ -651,8 +651,14 @@ namespace Sched.Controllers
 
             var technicianToValidate = techniciansToValidate
                 .Where(st => st.technicianId == technicianId
-                    && st.jobStartTime >= requestedStartTime
-                    || st.jobEndTime <= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
+                    && ((st.jobStartTime <= requestedStartTime
+                    && st.jobEndTime >= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
+                    || (st.jobStartTime <= requestedStartTime
+                    && st.jobEndTime <= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
+                    || (st.jobStartTime >= requestedStartTime
+                    && st.jobEndTime >= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
+                    || (st.jobStartTime >= requestedStartTime
+                    && st.jobEndTime <= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))))
                 .FirstOrDefault();
             
             if (technicianToValidate == null)
@@ -663,7 +669,7 @@ namespace Sched.Controllers
             return validate;
         }
 
-        public bool ValidateResource(int workOrderId, int resourceId, DateTime startTime)
+        public bool ValidateResource(int workOrderId, int resourceId, DateTime requestedStartTime)
         {
             bool validate = false;
 
@@ -682,9 +688,15 @@ namespace Sched.Controllers
                 }).ToList();
 
             var resourceToValidate = resourcesToValidate
-                .Where(rtv => rtv.jobStartTime >= startTime 
-                && rtv.jobEndTime <= startTime.AddMinutes(rtv.estimatedJobTimeMinutes)
-                && rtv.resourceId == resourceId)
+                .Where(rtv => rtv.resourceId == resourceId
+                    && ((rtv.jobStartTime <= requestedStartTime
+                    && rtv.jobEndTime >= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
+                    || (rtv.jobStartTime <= requestedStartTime
+                    && rtv.jobEndTime <= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
+                    || (rtv.jobStartTime >= requestedStartTime
+                    && rtv.jobEndTime >= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
+                    || (rtv.jobStartTime >= requestedStartTime
+                    && rtv.jobEndTime <= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))))
                 .FirstOrDefault();
 
             if (resourceToValidate.jobId != 0 )
