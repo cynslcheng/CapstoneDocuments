@@ -18,9 +18,10 @@
     <form>
         <input type="button" value="Create Work Order" onclick="location.href='@Url.Action("NewWorkOrder","Display")'"/>
         @*need to get workorderId*@
-        <input type="button" value="Update Work Order" onclick="location.href='@Url.Action("Update","Display")'" />
+        
         @if (Session["workOrder"] != null)
         {
+            <input type="button" value="Update Work Order" onclick="location.href='@Url.Action("Update","Display")'" />
             <input type="button" value="Book Work Order" onclick="location.href='@Url.Action("Book","Display")'" />
             <input type="button" value="cancel Work Order" onclick="location.href='@Url.Action("Cancel","Display")'" />
 
@@ -70,7 +71,7 @@
         var test = Session["WorkAreaList"];
         <form method="post" action="@Url.Action("CreateWorkOrder", "Display")">
 
-            <label>Current Max start date @Session["MinDateTime"]</label>
+            
             <label>Earliest Start Date</label>
             <input class="form-control" type="datetime-local" id="minimum" name="minimum" required="true" />
 
@@ -107,11 +108,12 @@
         {
             WorkOrder updateWorkOrder = (WorkOrder)Session["workOrder"];
             <form method="post" action="@Url.Action("updateWorkOrder", "Display")">
-                <label>Earliest Start Date</label>
+                <label>Earliest Start Date<br /></label>
+                <label>Current Min start date @Session["MinDateTime"]<br /></label>
                 <input class="form-control" type="datetime-local" id="minimum" name="minimum" value=updateWorkOrder.minimum_start_time/>
                 <label>Max Start Date<br/></label>
                 <input class="form-control" type="datetime-local" id="maximum" name="maximum" value=updateWorkOrder.maximum_start_time />
-               <label>Current Max start date @Session["MaxDateTime"]</label>
+               <label>Current Max start date @Session["MaxDateTime"]<br /></label>
                 
                 <label>job Type</label>
                 @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
