@@ -23,7 +23,7 @@ namespace Sched.Controllers
             string searchField = Session["searchField"] as string;
             string searchValue = Session["searchValue"] as string;
             List<WorkOrder> workOrdersList = null;
-            if (workOrder == null && (searchField == null || searchValue == null))
+            if (workOrder == null && (searchField == null || searchValue == null || searchValue != ""))
             {
                 workOrdersList = db.WorkOrder.ToList();
             }
