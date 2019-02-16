@@ -626,6 +626,13 @@ namespace Sched.Controllers
             SetSessionMessages("Success", "");
             SetSessionMessages("Error", "");
 
+            bool validateTechnician = ValidateTechnician(workOrderId, technicianId, startTime);
+            if (!validateTechnician)
+            {
+                Session["Error"] = "Technician already booked for this time, please try again";
+                return RedirectToAction("Index", "Home");
+            }
+
             WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             var notCompletedStatus = new List<String> { "completed", "cancelled", "deleted" };
             IQueryable<Status> notCompletedStatusIds = dbContext.status.Where(x => notCompletedStatus.Contains(x.description));
@@ -656,13 +663,7 @@ namespace Sched.Controllers
         /// <returns></returns>
         public bool isSuccessfulAssignTechnician(WorkOrder workOrder, int technicianId, DateTime startTime)
         {
-            bool validateTechnician = ValidateTechnician(workOrderId, technicianId, startTime);
-            if (!validateTechnician)
-            {
-                Session["Error"] = "Technician already booked for this time, please try again";
-                return RedirectToAction("Index", "Home");
-            }
-
+            
             Job job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First();
             int updateId = dbContext.status.Where(x => x.name == "BAPP").First().Id;
             if (dbContext.jobCrew.Where(x => x.jobId == job.Id).Count() != 0)
@@ -857,7 +858,7 @@ namespace Sched.Controllers
                 return false;
             }
 
-
+        }
 
         public bool ValidateTechnician(int workOrderId, int technicianId, DateTime requestedStartTime)
         {
@@ -882,13 +883,14 @@ namespace Sched.Controllers
                     && ((st.jobStartTime <= requestedStartTime
                     && st.jobEndTime >= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
                     || (st.jobStartTime <= requestedStartTime
+                    && st.jobEndTime >= requestedStartTime
                     && st.jobEndTime <= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
                     || (st.jobStartTime >= requestedStartTime
                     && st.jobEndTime >= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))
                     || (st.jobStartTime >= requestedStartTime
                     && st.jobEndTime <= requestedStartTime.AddMinutes(st.estimatedJobTimeMinutes))))
                 .FirstOrDefault();
-            
+
             if (technicianToValidate == null)
             {
                 validate = true;
@@ -920,6 +922,7 @@ namespace Sched.Controllers
                     && ((rtv.jobStartTime <= requestedStartTime
                     && rtv.jobEndTime >= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
                     || (rtv.jobStartTime <= requestedStartTime
+                    && rtv.jobEndTime >= requestedStartTime
                     && rtv.jobEndTime <= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
                     || (rtv.jobStartTime >= requestedStartTime
                     && rtv.jobEndTime >= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))
@@ -927,7 +930,7 @@ namespace Sched.Controllers
                     && rtv.jobEndTime <= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))))
                 .FirstOrDefault();
 
-            if (resourceToValidate.jobId != 0 )
+            if (resourceToValidate.jobId != 0)
             {
                 validate = true;
             }
