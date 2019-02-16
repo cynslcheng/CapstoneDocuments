@@ -204,7 +204,7 @@ namespace Sched.Controllers
             Session["WorkOrderFormType"] = "Update";
             //Session["workOrder"] = workOrder;
             Session["MaxDateTime"] = workOrder.maximum_start_time;
-            Session["MinSDateTime"] = workOrder.minimum_start_time;
+            Session["MinDateTime"] = workOrder.minimum_start_time;
             Session["workOrder"] = workOrder;
             populateSelectList();
             return RedirectToAction("Index", "Home");
