@@ -74,7 +74,7 @@
             <label>Earliest Start Date</label>
             <input class="form-control" type="datetime-local" id="minimum" name="minimum" required="true" />
 
-            <label>Current Max start date @Session["MaxDateTime"]</label>
+           
             <label>Max Start Date<br /></label>
             <input class="form-control" type="datetime-local" id="maximum" name="maximum" required="true" />
             
@@ -89,8 +89,10 @@
             <label>Work Area</label>
             @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
 
-            <label>Address</label>
-            <input class="form-control" type="text" id="address" name="address"  required="true" />
+            <label>House number</label>
+            <input class="form-control" type="text" id="houseNumber" name="houseNumber"  required="true" />
+            <label>Street</label>
+            <input class="form-control" type="text" id="street" name="street" required="true" />
             <label>Postal Code</label>
             <input class="form-control" type="text" id="postalCode" name="postalCode"  required="true" />
             <label>Estimated Time</label>
@@ -124,8 +126,10 @@
                 <label>Work Area</label>
                 @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
 
-                <label>Address</label>
-                <input class="form-control" type="text" id="address" name="address" value=@updateWorkOrder.address required="true"/>
+                <label>House number</label>
+                <input class="form-control" type="text" id="houseNumber" name="houseNumber" value=@Session["HouseNumber"].ToString() required="true" />
+                <label>Street</label>
+                <input class="form-control" type="text" id="street" name="street" value=@Session["Street"].ToString() required="true" />
                 <label>Postal Code</label>
                 <input class="form-control" type="text" id="postalCode" name="postalCode"  value=@(updateWorkOrder.postal_code) required="true"/>
                 <label>Estimated Time</label>
