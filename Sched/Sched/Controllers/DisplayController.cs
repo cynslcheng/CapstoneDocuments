@@ -130,7 +130,7 @@ namespace Sched.Controllers
             Session["PriorityList"] = priorityList;
         }
 
-        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
+        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string houseNumber,string street, string postalCode, int estimatedTime)
         {
             Session["Error"] = null;
             Session["Success"] = null;
@@ -138,19 +138,20 @@ namespace Sched.Controllers
             //if (ValidateWorkOrder(workOrder))
             int statusId = dbContext.status.Where(x => x.name == "WSCHED").First().Id;
             WorkOrder workOrder = new WorkOrder();
-            workOrder.maximum_start_time = maximum;
-            workOrder.minimum_start_time = minimum;
-            workOrder.created_at = DateTime.Now;
-            workOrder.priority = Convert.ToInt32(priority);
-            workOrder.work_area_id = workArea;
-            workOrder.status_id = statusId;
-            workOrder.address = address;
-            workOrder.postal_code = postalCode;
-            if (validateWorkOrder(minimum, maximum, address, postalCode, estimatedTime))
+            
+            if (validateWorkOrder(minimum, maximum, street,houseNumber, postalCode, estimatedTime))
             {
                 try
                 {
-                    
+                    workOrder.maximum_start_time = maximum;
+                    workOrder.minimum_start_time = minimum;
+                    workOrder.created_at = DateTime.Now;
+                    workOrder.priority = Convert.ToInt32(priority);
+                    workOrder.work_area_id = workArea;
+                    workOrder.status_id = statusId;
+                    workOrder.address = houseNumber + " " +street;
+                    workOrder.postal_code = postalCode;
+
                     //check that dates are in the future
                     Job job = new Job();
                     job.job_type_id = jobType;
@@ -199,18 +200,24 @@ namespace Sched.Controllers
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
             int workOrderId = workOrder.Id;
             workOrder.postal_code=workOrder.postal_code.Replace(' ', '-');
-            workOrder.address=workOrder.address.Replace(' ', '-');
+            workOrder.address=workOrder.address;
             //WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             Session["WorkOrderFormType"] = "Update";
             //Session["workOrder"] = workOrder;
             Session["MaxDateTime"] = workOrder.maximum_start_time;
             Session["MinDateTime"] = workOrder.minimum_start_time;
+
+            //It seems the address get's cut off when displaying in view as a whole variable
+            //not sure what causes this
+            string[] addressArray = workOrder.address.Split(' ');
+            Session["HouseNumber"] = addressArray[0];
+            Session["Street"] = addressArray[1];
             Session["workOrder"] = workOrder;
             populateSelectList();
             return RedirectToAction("Index", "Home");
         }
 
-        public ActionResult updateWorkOrder(DateTime? minimum, DateTime? maximum, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
+        public ActionResult updateWorkOrder(DateTime? minimum, DateTime? maximum, string priority, int jobType, int workArea, string street,string houseNumber, string postalCode, int estimatedTime)
         {
             Session["Error"] = null;
             Session["Success"] = null;
@@ -236,7 +243,7 @@ namespace Sched.Controllers
             }
 
             // validateWorkOrder(minimum, maximum, priority, jobType, workArea, status, address, postalCode, estimatedTime);
-            if (validateWorkOrder(minDate, maxDate, address, postalCode, estimatedTime) == true)
+            if (validateWorkOrder(minDate, maxDate, street,houseNumber, postalCode, estimatedTime) == true)
             {
                 try
                 {
@@ -245,9 +252,12 @@ namespace Sched.Controllers
                     workOrder.maximum_start_time = maxDate;
                     workOrder.priority = Convert.ToInt32(priority);
                     workOrder.work_area_id = workArea;
-                    workOrder.address = address;
+                    workOrder.address = houseNumber +" "+street;
                     workOrder.postal_code = postalCode;
                     workOrder.estimated_time_minutes = estimatedTime;
+                    Job job = dbContext.job.Where(x => x.work_order_id == workOrder.Id).First();
+                    job.job_type_id = jobType;
+                    dbContext.Entry(job).State = System.Data.Entity.EntityState.Modified;
                     dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
                     dbContext.SaveChanges();
                     Session["Success"] = "Work order updated!";
@@ -276,7 +286,7 @@ namespace Sched.Controllers
 
         }
 
-        public bool validateWorkOrder(DateTime minimum, DateTime maximum, string address, string postalCode, int estimatedTime)
+        public bool validateWorkOrder(DateTime minimum, DateTime maximum, string street, string houseNumber, string postalCode, int estimatedTime)
         {
             string validationExpression = @"^[ABCEGHJ-NPRSTVXY]{1}[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[ ]?[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[0-9]{1}$";
 
@@ -291,6 +301,11 @@ namespace Sched.Controllers
             else
             {
               postalCode=  postalCode.Replace('-', ' ');
+            }
+            if (estimatedTime<1)
+            {
+                Session["Error"] += "A job can't be less than 1 minute!<br/>";
+                return false;
             }
             if (maximum == DateTime.Now || maximum < DateTime.Now)
             {
@@ -307,15 +322,17 @@ namespace Sched.Controllers
                 Session["Error"] += "Invalid Dates<br/>";
                 return false;
             }
-            if (address == "")
+            if (street.Trim() == "")
             {
-                Session["Error"] += "Invalid Address<br/>";
+                Session["Error"] += "Invalid street<br/>";
                 return false;
             }
-            else
+            if (houseNumber.Trim() == "")
             {
-                address = address.Replace('-', ' ');
+                Session["Error"] += "Invalid House Number<br/>";
+                return false;
             }
+           
             if (regex.IsMatch(postalCode.Trim()) == false)
             {
                 Session["Error"] += "Invalid Postal Code";
