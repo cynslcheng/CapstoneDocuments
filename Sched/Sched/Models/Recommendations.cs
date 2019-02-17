@@ -14,6 +14,24 @@ namespace Sched.Models
         public WorkOrder workOrder { get; set; }
     }
 
+    public class TechnicianAvailability
+    {
+        public DateTime startTime { get; set; }
+        public DateTime endTime { get; set; }
+        public int technicianId { get; set; }
+        public DateTime nextStart { get; set; }
+        public int freeTime { get; set; }
+    }
+
+    public class ResourceAvailability
+    {
+        public DateTime startTime { get; set; }
+        public DateTime endTime { get; set; }
+        public int resourcesId { get; set; }
+        public DateTime nextStart { get; set; }
+        public int freeTime { get; set; }
+    }
+
     public class TechniciansList
     {
         public Technician technician { get; set; }

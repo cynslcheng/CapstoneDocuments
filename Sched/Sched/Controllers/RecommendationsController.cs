@@ -51,14 +51,14 @@ namespace Sched.Controllers
             List<Technician> eligibleTechnicians = GetEligibleTechnicians(job, jobTypes, technicians);
 
             // (b) Find available eligible technicians from eligible technicians
-            List<Technician> availableEligibleTechnicians = GetAvailableTechnicians(eligibleTechnicians);
+            List<Technician> availableEligibleTechnicians = GetAvailableTechnicians(workOrder, eligibleTechnicians);
 
             // (c) Filter resources based on dispatch area
             List<Resources> resources = dbContext.resources.Where(r => r.work_area_id == workOrder.work_area_id).ToList();
             // (c) Find required resources for job
             List<Resources> requiredResources = GetRequiredResources(job, jobTypes, resources);
             // (c) Find available required Resources
-            List<Resources> availableRequiredResources = GetAvailableResources(requiredResources);
+            List<Resources> availableRequiredResources = GetAvailableResources(workOrder, requiredResources);
 
             // (d) Get proximity of preceding job site (iter3)
             // (e) Get proximity of project work (iter3)
@@ -138,8 +138,8 @@ namespace Sched.Controllers
         /// </summary>
         /// <param name="eligibleTechnicians">List of all technicians who meet the skills required to complete work order</param>
         /// <returns>List of all technicians who are available during the work orders
-        /// desired time range (currently only check if work is scheduled for that day)</returns>
-        private List<Technician> GetAvailableTechnicians(List<Technician> eligibleTechnicians)
+        /// desired time range</returns>
+        private List<Technician> GetAvailableTechnicians(WorkOrder workOrder, List<Technician> eligibleTechnicians)
         {
             //Filter eligible technicians for availability
             List<Technician> availableTechnicians = new List<Technician>();
@@ -163,12 +163,33 @@ namespace Sched.Controllers
             //If technician working, check schedule between desired timeframe if available for workOrder estimated time
             //add if times available
             List<JobCrew> jobCrews = dbContext.jobCrew.ToList();
+            string maxTime = workOrder.maximum_start_time.ToString();
+            string minTime = workOrder.minimum_start_time.ToString();
             foreach (var crewTechnician in eligibleTechniciansInCrew)
             {
-                //Code to check timeframes here, unsure how to go about
+                var crewTechnicianAvailability = dbContext.Database.SqlQuery<TechnicianAvailability>
+                    ("SELECT *, " +
+                    "CASE " +
+                    "When next_start is null then DATEDIFF(hour, end_time, '" + maxTime + "') " +
+                    "else DATEDIFF(hour, end_time, next_start) " +
+                    "END AS free_time from( " +
+                    "SELECT *, LEAD(start_time) OVER(PARTITION BY technicianid ORDER BY start_time) AS next_start FROM( " +
+                    "SELECT start_time, end_time, technicianid FROM job_crew JOIN crew_technician ON job_crew.crewid = crew_technician.crewid " +
+                    "where start_time > '" + minTime + "' and end_time < '" + maxTime + "' and technicianid = " + crewTechnician.Id + " " +
+                    ") t1) t2 " +
+                    "UNION " +
+                    "(SELECT null, MIN(start_time), technicianid, null, DATEDIFF(hour, '" + minTime + "', MIN(start_time)) FROM job_crew JOIN crew_technician ON job_crew.crewid = crew_technician.crewid " +
+                    "where start_time > '" + minTime + "' and end_time < '" + maxTime + "' and technicianid = " + crewTechnician.Id + " group by technicianid) " +
+                    "order by technicianid").ToList();
+                if (crewTechnicianAvailability.Count() > 0)
+                {
+                    availableTechnicians.Add(crewTechnician);
+                }
             }
             return availableTechnicians;
         }
+
+
 
         /// <summary>
         /// Checks what resources are required to complete the requested work order
@@ -215,9 +236,8 @@ namespace Sched.Controllers
         /// all eligible resources are still able to be selected from all resources
         /// </summary>
         /// <param name="requiredResources">List of resources required to complete work order, filtered by dispatch area</param>
-        /// <returns>List of available resources required to complete work order. Currently only
-        /// checks on if a resource is scheduled for the same day</returns>
-        private List<Resources> GetAvailableResources(List<Resources> requiredResources)
+        /// <returns>List of available resources required to complete work order.</returns>
+        private List<Resources> GetAvailableResources(WorkOrder workOrder, List<Resources> requiredResources)
         {
             List<Resources> availableEligibleResources = new List<Resources>();
             List<Resources> eligibleResourcesInCrew = new List<Resources>();
@@ -241,9 +261,29 @@ namespace Sched.Controllers
             //If technician working, check schedule between desired timeframe if available for workOrder estimated time
             //add if times available
             List<JobCrew> jobCrews = dbContext.jobCrew.ToList();
+            string maxTime = workOrder.maximum_start_time.ToString();
+            string minTime = workOrder.minimum_start_time.ToString();
             foreach (var crewResource in eligibleResourcesInCrew)
             {
-                //Code to check timeframes here, unsure how to go about
+                var crewResourceAvailability = dbContext.Database.SqlQuery<ResourceAvailability>
+                    ("SELECT *, " +
+                    "CASE " +
+                    "When next_start is null then DATEDIFF(hour, end_time, '" + maxTime + "') " +
+                    "else DATEDIFF(hour, end_time, next_start) " +
+                    "END AS free_time from( " +
+                    "SELECT *, LEAD(start_time) OVER(PARTITION BY resourcesid ORDER BY start_time) AS next_start FROM( " +
+                    "SELECT start_time, end_time, resourcesid FROM job_crew JOIN crew_resources ON job_crew.crewid = crew_resources.crewid " +
+                    "where start_time > '" + minTime + "' and end_time < '" + maxTime + "' and resourcesid = " + crewResource.Id + " " +
+                    ") t1) t2 " +
+                    "UNION " +
+                    "(SELECT null, MIN(start_time), resourcesid, null, DATEDIFF(hour, '" + minTime + "', MIN(start_time)) FROM job_crew JOIN crew_resources ON job_crew.crewid = crew_resources.crewid " +
+                    "where start_time > '" + minTime + "' and end_time < '" + maxTime + "' and resourcesid = " + crewResource.Id + " group by resourcesid) " +
+                    "order by resourcesid").ToList();
+                
+                if (crewResourceAvailability.Count() > 0 )
+                {
+                    availableEligibleResources.Add(crewResource);
+                }
             }
 
             return availableEligibleResources;
