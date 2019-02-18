@@ -23,14 +23,16 @@ namespace Sched.Controllers
             string searchField = Session["searchField"] as string;
             string searchValue = Session["searchValue"] as string;
             List<WorkOrder> workOrdersList = null;
-            if (workOrder == null && (searchField == null || searchValue == null))
+            if (workOrder == null && (searchField == null || searchValue == null || searchValue == ""))
             {
                 workOrdersList = db.WorkOrder.ToList();
             }
-            else if (searchField != null && searchValue != null)
+            else if (searchField != null && searchValue != null && searchValue != "")
             {
                 var query = "SELECT * FROM work_order WHERE " + searchField + " = " + searchValue;
                 workOrdersList = db.WorkOrder.SqlQuery(query).ToList();
+                Session["searchField"] = null;
+                Session["searchValue"] = null;
             }
             else
             {

@@ -135,22 +135,15 @@
                     <label>Current Max start date @Session["MinDateTime"]</label>
                     <label>Earliest Start Date</label>
                     <input class="form-control" type="datetime-local" id="minimum" name="minimum" required="true" />
-
                     <label>Current Max start date @Session["MaxDateTime"]</label>
                     <label>Max Start Date<br /></label>
                     <input class="form-control" type="datetime-local" id="maximum" name="maximum" required="true" />
-
-
                     <label>job Type</label>
                     @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
                     <label>priority</label>
                     @Html.DropDownList("priority", (IEnumerable<SelectListItem>)Session["PriorityList"])
-
-
-
-                    <label>Work Area</label>
+                   <label>Work Area</label>
                     @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
-
                     <label>Address</label>
                     <input class="form-control" type="text" id="address" name="address" required="true" />
                     <label>Postal Code</label>
@@ -158,8 +151,6 @@
                     <label>Estimated Time</label>
                     <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" required="true" />
                     <input class="form-control" type="submit" value="submit" />
-
-
                 </form>
             }
 
