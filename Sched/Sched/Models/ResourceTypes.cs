@@ -10,7 +10,7 @@ namespace Sched.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        private string name { get; }
+        public string name { get; set; }
         private string description { get; }
     }
 }
