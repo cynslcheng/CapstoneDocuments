@@ -1,76 +1,223 @@
 ﻿@model IEnumerable<Sched.Models.WorkOrder>
 
-<form method="post" action="@Url.Action("Search","WorkOrders")">
-    <input type="hidden" id="searchField" name="searchField" value="id" />
-    <label for="searchValue" class="control-label col-md-2">Work Order ID</label>
-    <input class="form-control col-md-2" type="text" id="searchValue" name="searchValue" />
-    <input class="col-sm-offset-1" type="submit" value="Search" />
-</form>
-<br />
-<button onclick="location.href = '@(Url.Action("Filter", "WorkOrders"))'">Filters</button>
-<br /><br />
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Id)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.minimum_start_time)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.maximum_start_time)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.priority)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.status_id)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.work_area_id)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.estimated_time_minutes)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.created_at)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.modified_at)
-        </th>
-        <th></th>
-    </tr>
+    <table id="table"
+           data-toolbar="#toolbar"
+           data-search="true"
+           data-advanced-search="true"
+           data-id-table="advancedTable"
+           data-cookie="true"
+           data-cookie-id-table="saveId"
+           data-show-refresh="true"
+           data-show-search="false"
+           data-show-toggle="true"
+           data-show-columns="true"
+           data-show-export="true"
+           data-detail-view="true"
+           data-detail-formatter="detailFormatter"
+           data-show-pagination-switch="true"
+           data-pagination="true"
+           data-id-field="id"
+           data-page-list="[10, 25, 50, 100, ALL]"
+           data-show-footer="false"
+           data-side-pagination="client"
+           data-response-handler="responseHandler"></table>
 
-@foreach (var item in Model) {
-    <tr onclick="location.href = '@(Url.Action("Details", "WorkOrders", new { id = item.Id }))'">
-        <td>
-            @Html.DisplayFor(modelItem => item.Id)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.minimum_start_time)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.maximum_start_time)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.priority)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.status_id)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.work_area_id)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.estimated_time_minutes)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.created_at)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.modified_at)
-        </td>
-    </tr>
-}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
 
-</table>
+<script>
+    var $table = $('#table')
+    var selections = []
+
+    function getIdSelections() {
+        return $.map($table.bootstrapTable('getSelections'), function (row) {
+            return row.id
+        })
+    }
+
+    //function responseHandler(res) {
+    //    $.each(res.rows, function (i, row) {
+    //        row.state = $.inArray(row.id, selections) !== -1
+    //    })
+    //    return res
+    //}
+
+    function detailFormatter(index, row) {
+        var html = []
+        $.each(row, function (key, value) {
+            html.push('<p><b>' + key + ':</b> ' + value + '</p>')
+        })
+        return html.join('')
+    }
+
+    function operateFormatter(value, row, index) {
+        return [
+            '<a class="like" href="javascript:void(0)" title="Like">',
+            '<i class="fa fa-heart"></i>',
+            '</a>  ',
+            '<a class="remove" href="javascript:void(0)" title="Remove">',
+            '<i class="fa fa-trash"></i>',
+            '</a>'
+        ].join('')
+    }
+
+    window.operateEvents = {
+        'click .like': function (e, value, row, index) {
+            alert('You click like action, row: ' + JSON.stringify(row))
+        },
+        'click .remove': function (e, value, row, index) {
+            $table.bootstrapTable('remove', {
+                field: 'id',
+                values: [row.id]
+            })
+        }
+    }
+
+    function totalTextFormatter(data) {
+        return 'Total'
+    }
+
+    function totalNameFormatter(data) {
+        return data.length
+    }
+
+    function totalPriceFormatter(data) {
+        var total = 0
+        $.each(data, function (i, row) {
+            total += +(row.price.substring(1))
+        })
+        return '$' + total
+    }
+    function formatDate(data) {
+        data = data.replace(/\D/g, '')
+        data = data.slice(0, -3)
+        return moment.unix(data).format('YYYY-MM-DD HH:mm:ss')
+        }
+
+        function modifiedFormat(data) {
+            return data.join().replace(/,/g, '')
+        }
+
+    function initTable() {
+        var data = @Html.Raw(Json.Encode(Model))
+            data = data.map(function (row) {
+                row.created_at = formatDate(row.created_at)
+                row.minimum_start_time = formatDate(row.minimum_start_time)
+                row.maximum_start_time = formatDate(row.maximum_start_time)
+                row.modified_at = modifiedFormat(row.modified_at)
+                row.state = false
+                return row
+            })
+
+        $table.bootstrapTable({
+                    height: 350,
+            columns: [
+                [{
+                       field: 'state',
+                    checkbox: true,
+                    rowspan: 2,
+                    align: 'center',
+                    valign: 'middle'
+                }, {
+                    title:   '@Html.DisplayNameFor(model => model.Id)',
+                    field: 'Id',
+                    rowspan: 2,
+                    align: 'center',
+                    valign: 'middle',
+                        sortable: true,
+                        searchable: true,
+                }, {
+                        title: 'Item Detail',
+                    colspan: 8,
+                    align: 'center'
+                }],
+                [{
+                    field: 'minimum_start_time',
+                    title: '@Html.DisplayNameFor(model => model.minimum_start_time)',
+                    sortable: true,
+                   // formatter: formatDate,
+                    align: 'center'
+                }, {
+                    field: 'maximum_start_time',
+                    title:   '@Html.DisplayNameFor(model => model.maximum_start_time)',
+                    sortable: true,
+                    align: 'center',
+                   // formatter: formatDate,
+                }, {
+                    field: 'priority',
+                    title: '@Html.DisplayNameFor(model => model.priority)',
+                        align: 'center',
+                        sortable: true,
+                        searchable: true,
+                    //events: window.operateEvents,
+                    //formatter: operateFormatter
+                    }
+                    , {
+                    field: 'status_id',
+                    title: '@Html.DisplayNameFor(model => model.status_id)',
+                        align: 'center',
+                        sortable: true,
+                        searchable: true
+                    //events: window.operateEvents,
+                    //formatter: operateFormatter
+                    }
+                     , {
+                    field: 'work_area_id',
+                    title: '@Html.DisplayNameFor(model => model.work_area_id)',
+                         align: 'center',
+                         sortable: true,
+                         searchable: true
+                    //events: window.operateEvents,
+                    //formatter: operateFormatter
+                    }
+                    , {
+                        field: 'estimated_time_minutes',
+                        title: '@Html.DisplayNameFor(model => model.estimated_time_minutes)',
+                        align: 'center',
+                        sortable: true,
+                    //events: window.operateEvents,
+                    //formatter: operateFormatter
+                    }
+                    , {
+                    field: 'created_at',
+                    title:  '@Html.DisplayNameFor(model => model.created_at)',
+                        align: 'center',
+                        sortable: true,
+                    //events: window.operateEvents,
+                    //    formatter: formatDate,
+                    }
+                     , {
+                    field: 'modified_at',
+                    title: '@Html.DisplayNameFor(model => model.modified_at)',
+                         align: 'center',
+                         sortable: true,
+                         visible: false,
+                    //events: window.operateEvents,
+                      //  formatter: modifiedFormat
+                }
+                ]
+            ],
+            onClickRow: function (row, element, field) {
+                console.log(row, 'the row') 
+                location.href = "/WorkOrders/Details?Id=" + row.Id
+            },
+            onCheck: function (row, element) {
+                console.log('You checked ths row: ', row)
+            },
+            //onColumnAdvancedSearch: function (params) {
+            //    console.log(params)
+            //    $('#table').bootstrapTable('refresh', { query: { id: 8 } })
+            //},
+            data: data,
+            totalRows: data.length,
+        })
+    }
+    $(function () {
+        initTable()
+    })
+</script>
+
+
+
+
+

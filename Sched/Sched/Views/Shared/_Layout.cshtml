@@ -6,6 +6,18 @@
     <title>@ViewBag.Title - SCHED</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+            crossorigin="anonymous"></script>
+    <link href="https://unpkg.com/bootstrap-table@1.13.4/dist/bootstrap-table.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/tableexport.jquery.plugin@1.10.1/tableExport.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.13.4/dist/bootstrap-table.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.13.4/dist/extensions/export/bootstrap-table-export.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.13.4/dist/extensions/toolbar/bootstrap-table-toolbar.min.js"></script>
+    @*<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.9/semantic.min.js"></script>*@
+    <script src="https://unpkg.com/bootstrap-table@1.13.4/dist/extensions/cookie/bootstrap-table-cookie.min.js"></script>
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -26,17 +38,17 @@
             </div>
         </div>
     </div>
-    <div class="container body-content">
-        <br />
+    <div class="container-fluid body-content">
         @RenderBody()
         <hr />
         <footer>
             <p>&copy; @DateTime.Now.Year - SCHED Conestoga Team</p>
         </footer>
     </div>
-
-    @Scripts.Render("~/bundles/jquery")
+   
+    @*@Scripts.Render("~/bundles/jquery")*@
     @Scripts.Render("~/bundles/bootstrap")
+    @*@Scripts.Render("~/bundles/moment")*@
     @RenderSection("scripts", required: false)
 </body>
 </html>

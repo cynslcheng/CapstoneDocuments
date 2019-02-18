@@ -3,144 +3,227 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="row">
-    @Html.Action("_WorkOrdersPartial", "WorkOrders")
-</div>
-<div class="row">
-    <div class="col-md-4">
-        @if (Session["WOHeader"] != null)
-        {
-            WOHeader WOHeader = (WOHeader)Session["WOHeader"];
-            @Html.Action("_ReccomendationsPartial", "Recommendations", new { WOHeader })
-        }
+<div class="container">
+
+    <div class="row">
+        <form method="post" action="@Url.Action("Search","WorkOrders")">
+            <input type="hidden" id="searchField" name="searchField" value="id" />
+            <label for="searchValue" class="control-label col-md-2">Work Order ID</label>
+            <input class="form-control col-md-2" type="text" id="searchValue" name="searchValue" />
+            <input class="col-sm-offset-1" type="submit" value="Search" />
+        </form>
+        <br />
+        <button onclick="location.href = '@(Url.Action("Filter", "WorkOrders"))'">Filters</button>
+        <br /><br />
     </div>
-    <form>
-        <input type="button" value="Create Work Order" onclick="location.href='@Url.Action("NewWorkOrder","Display")'"/>
-        @*need to get workorderId*@
-        
-        @if (Session["workOrder"] != null)
-        {
-            <input type="button" value="Update Work Order" onclick="location.href='@Url.Action("Update","Display")'" />
-            <input type="button" value="Book Work Order" onclick="location.href='@Url.Action("Book","Display")'" />
-            <input type="button" value="Cancel Work Order" onclick="location.href='@Url.Action("Cancel","Display")'" />
-
-        }
-    </form>
-    @*Work Order Crud view
-    This uses session variables to determine which form to display and uses sessions to pass the work order model
-    This allows the forms to remain unaffected by filters*@
-    @if (Session["Success"] != null)
-    {
-        <label>@Session["Success"].ToString()<br /></label>
-    }
-    @if (Session["Error"] != null)
-    {
-        <label>@Session["Error"]<br /></label>
-    }
-
-    @if(Session["WorkOrderFormType"]==null|| Session["WorkOrderFormType"].ToString() =="Select")
-    {
-        if (Session["workOrder"]!=null)
-        {
-            WorkOrder workOrder = (WorkOrder)Session["workOrder"];
-            <label>Id: @workOrder.Id<br /></label>
-            <label>Estimated Time(mins): @workOrder.estimated_time_minutes<br /></label>
-            <label>Max Start Time: @workOrder.maximum_start_time<br /></label>
-            <label>Min Start Time: @workOrder.minimum_start_time<br /></label>
-            <label>Postal Code: @workOrder.postal_code<br /></label>
-            <label>Priority: @workOrder.priority<br /></label>
-            <label>Address: @workOrder.address<br /></label>
-            <label>Status Id: @workOrder.status_id<br /></label>
-            <label>Area Id:@workOrder.work_area_id<br /></label>
-        }
-    }
-    else if (Session["WorkOrderFormType"].ToString() == "Cancel")
-    {
-        WorkOrder cancelWorkOrder = (WorkOrder)Session["workOrder"];
-        <form method="post" action="@Url.Action("cancelWorkOrder","Display")">
-            <label>Are you sure you want to delete work order: @cancelWorkOrder.Id</label>
-            <button class="btn-blue">@Html.ActionLink("Cancel", "Index" , "Home")</button>
-           
-            <input class="form-control" type="submit" value="submit" />
-        </form>
-    }
-    else if (Session["WorkOrderFormType"].ToString() == "Create")
-    {
-
-        var test = Session["WorkAreaList"];
-        <form method="post" action="@Url.Action("CreateWorkOrder", "Display")">
-
-            
-            <label>Earliest Start Date</label>
-            <input class="form-control" type="datetime-local" id="minimum" name="minimum" required="true" />
-
-           
-            <label>Max Start Date<br /></label>
-            <input class="form-control" type="datetime-local" id="maximum" name="maximum" required="true" />
-            
-
-            <label>job Type</label>
-            @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
-            <label>priority</label>
-           @Html.DropDownList("priority" ,(IEnumerable<SelectListItem>)Session["PriorityList"])
-                
-
-            
-            <label>Work Area</label>
-            @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
-
-            <label>House number</label>
-            <input class="form-control" type="text" id="houseNumber" name="houseNumber"  required="true" />
-            <label>Street</label>
-            <input class="form-control" type="text" id="street" name="street" required="true" />
-            <label>Postal Code</label>
-            <input class="form-control" type="text" id="postalCode" name="postalCode"  required="true" />
-            <label>Estimated Time</label>
-            <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" required="true" />
-            <input class="form-control" type="submit" value="submit" />
-
-
-        </form>
-    }
-
-    else if (Session["WorkOrderFormType"].ToString() == "Update")
-    {
-        if (Session["workOrder"] != null)
-        {
-            WorkOrder updateWorkOrder = (WorkOrder)Session["workOrder"];
-            <form method="post" action="@Url.Action("updateWorkOrder", "Display")">
-                <label>Earliest Start Date<br /></label>
-                <label>Current Min start date @Session["MinDateTime"]<br /></label>
-                <input class="form-control" type="datetime-local" id="minimum" name="minimum" value=updateWorkOrder.minimum_start_time/>
-                <label>Max Start Date<br/></label>
-                <input class="form-control" type="datetime-local" id="maximum" name="maximum" value=updateWorkOrder.maximum_start_time />
-               <label>Current Max start date @Session["MaxDateTime"]<br /></label>
-                
-                <label>job Type</label>
-                @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
-                <label>priority</label>
-                <label>priority</label>
-                @Html.DropDownList("priority", (IEnumerable<SelectListItem>)Session["PriorityList"])
-                    
-                
-                <label>Work Area</label>
-                @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
-
-                <label>House number</label>
-                <input class="form-control" type="text" id="houseNumber" name="houseNumber" value=@Session["HouseNumber"].ToString() required="true" />
-                <label>Street</label>
-                <input class="form-control" type="text" id="street" name="street" value=@Session["Street"].ToString() required="true" />
-                <label>Postal Code</label>
-                <input class="form-control" type="text" id="postalCode" name="postalCode"  value=@(updateWorkOrder.postal_code) required="true"/>
-                <label>Estimated Time</label>
-                <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" value=@updateWorkOrder.estimated_time_minutes required="true"/>
-                <input class="form-control" type="submit" value="submit" />
-
-
-            </form>
-        }
-
-
-         
+    <div class="row">
+        <div id="workOrderCrud" @(Session["workOrder"] != null ? "class=col-lg-4" : "")>
+            @*Work Order Crud view
+                This uses session variables to determine which form to display and uses sessions to pass the work order model
+                This allows the forms to remain unaffected by filters*@
+            @if (Session["Success"] != null)
+            {
+                <label>@Session["Success"].ToString()<br /></label>
             }
+            @if (Session["Error"] != null)
+            {
+                <label>@Session["Error"]<br /></label>
+            }
+
+            @if (Session["WorkOrderFormType"] == null || Session["WorkOrderFormType"].ToString() == "Select")
+            {
+               
+                if (Session["workOrder"] != null)
+                {
+                    WorkOrder workOrder = (WorkOrder)Session["workOrder"];     
+                        
+                <form>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workOrderId">Id:</label>
+                            </div>
+                            <div class="col-lg-6">
+                                <input type="text" id="workOrderId" class="form-control" name="txtWorkOrderId" value="@workOrder.Id" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workOrderEstimatedTime">Estimated Time:</label>
+                            </div>
+                            <div class="col-lg-6">
+                                <input type="number" id="workOrderEstimatedTime" class="form-control form-control-sm" name="txtWorkEstimatedTime" value="@workOrder.estimated_time_minutes" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workOrderMinimumTime">Min Start Time:</label>
+                                </div>
+                            <div class="col-lg-6">
+                                <input type="datetime" id="workOrderMinimumTime" class="form-control form-control-sm" , name="txtWorkOrderMinimumTime" value="@workOrder.minimum_start_time.ToString("yyyy-MM-ddThh:mm:ss")" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workOrderMaxStartTime">Max Start Time:</label>
+                                </div>
+                            <div class="col-lg-6">
+                                <input type="datetime" id="workOrderMaxStartTime" class="form-control form-control-sm" name="txtWorkOrderMaxStartTime" value="@workOrder.maximum_start_time.ToString("yyyy-MM-ddThh:mm:ss")" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workOrderPostalCode">Postal Code:</label>
+                                </div>
+                            <div class="col-lg-6">
+                                <input type="text" id="workOrderPostalCode" class="form-control form-control-sm" name="txtWorkOrderPostalCode" value="@workOrder.postal_code" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workOrderPriority">Priority:</label>
+                                </div>
+                            <div class="col-lg-6">
+                                <input type="number" id="workOrderPriority" class="form-control form-control-sm" name="txtWorkOrderPriority" value="@workOrder.priority" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workOrderAddress">Address:</label>
+                                </div>
+                            <div class="col-lg-6">
+                                <input type="text" id="workOrderAddress" class="form-control form-control-sm" name="txtWorkOrderAddress" value="@workOrder.address" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workOrderStatusId">Status:</label>
+                                </div>
+                            <div class="col-lg-6">
+                                <input type="number" id="workOrderStatusId" class="form-control form-control-sm" name="txtWorkOrderStatusId" value="@workOrder.status_id" readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <label for="workAreaId">Work Area:</label>
+                                </div>
+                            <div class="col-lg-6">
+                                <input type="number" id="workAreaId" class="form-control form-control-sm" name="txtWorkAreaId" value="@workOrder.work_area_id" readonly>
+                            </div>
+                        </div>
+                   
+                </form>
+                   
+                }
+
+            }
+            else if (Session["WorkOrderFormType"].ToString() == "Cancel")
+            {
+                WorkOrder cancelWorkOrder = (WorkOrder)Session["workOrder"];
+                <form method="post" action="@Url.Action("cancelWorkOrder","Display")">
+                    <label>Are you sure you want to delete work order: @cancelWorkOrder.Id</label>
+                    <button class="btn-blue">@Html.ActionLink("Cancel", "Index", "Home")</button>
+
+                    <input class="form-control" type="submit" value="submit" />
+                </form>
+            }
+            else if (Session["WorkOrderFormType"].ToString() == "Create")
+            {
+
+                var test = Session["WorkAreaList"];
+                <form method="post" action="@Url.Action("CreateWorkOrder", "Display")">
+
+                    <label>Current Max start date @Session["MinDateTime"]</label>
+                    <label>Earliest Start Date</label>
+                    <input class="form-control" type="datetime-local" id="minimum" name="minimum" required="true" />
+                    <label>Current Max start date @Session["MaxDateTime"]</label>
+                    <label>Max Start Date<br /></label>
+                    <input class="form-control" type="datetime-local" id="maximum" name="maximum" required="true" />
+                    <label>job Type</label>
+                    @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
+                    <label>priority</label>
+                    @Html.DropDownList("priority", (IEnumerable<SelectListItem>)Session["PriorityList"])
+                   <label>Work Area</label>
+                    @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
+                    <label>Address</label>
+                    <input class="form-control" type="text" id="address" name="address" required="true" />
+                    <label>Postal Code</label>
+                    <input class="form-control" type="text" id="postalCode" name="postalCode" required="true" />
+                    <label>Estimated Time</label>
+                    <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" required="true" />
+                    <input class="form-control" type="submit" value="submit" />
+                </form>
+            }
+
+            else if (Session["WorkOrderFormType"].ToString() == "Update")
+            {
+                if (Session["workOrder"] != null)
+                {
+                    WorkOrder updateWorkOrder = (WorkOrder)Session["workOrder"];
+                    <form method="post" action="@Url.Action("updateWorkOrder", "Display")">
+                        <label>Earliest Start Date</label>
+                        <input class="form-control" type="datetime-local" id="minimum" name="minimum" value=updateWorkOrder.minimum_start_time />
+                        <label>Max Start Date<br /></label>
+                        <input class="form-control" type="datetime-local" id="maximum" name="maximum" value=updateWorkOrder.maximum_start_time />
+                        <label>Current Max start date @Session["MaxDateTime"]</label>
+
+                        <label>job Type</label>
+                        @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
+                        <label>priority</label>
+                        <label>priority</label>
+                        @Html.DropDownList("priority", (IEnumerable<SelectListItem>)Session["PriorityList"])
+
+
+                        <label>Work Area</label>
+                        @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
+
+                        <label>Address</label>
+                        <input class="form-control" type="text" id="address" name="address" value=@updateWorkOrder.address required="true" />
+                        <label>Postal Code</label>
+                        <input class="form-control" type="text" id="postalCode" name="postalCode" value=@(updateWorkOrder.postal_code) required="true" />
+                        <label>Estimated Time</label>
+                        <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" value=@updateWorkOrder.estimated_time_minutes required="true" />
+                        <input class="form-control" type="submit" value="submit" />
+
+
+                    </form>
+                }
+            }
+        </div>
+        <div id="workOrderList" @(Session["workOrder"] != null ? "class=col-lg-8" : "class=col-lg-12")>
+            @Html.Action("_WorkOrdersPartial", "WorkOrders")
+        </div>
+    </div>
+    <div class="row">
+        <form>
+            <button id="createWorkOrder" class="btn btn-primary btn-group" onclick="location.href = '@(Url.Action("NewWorkOrder", "Display"))'">
+                <i class="glyphicon glyphicon-plus"></i> Create
+            </button>
+            @*need to get workorderId*@
+            @if (Session["workOrder"] != null)
+            {
+                <button id="updateWorkOrder" , class="btn btn-info btn-group" onclick="location.href='@(Url.Action("Update","Display"))'">
+                    <i class="glyphicon glyphicon-edit"> Update</i>
+                </button>
+                <button id="bookWorkOrder" , class="btn btn-info btn-group" onclick="location.href='(@Url.Action("Book","Display"))'">
+                    <i class="glyphicon glyphicon-send"> Book</i>
+                </button>
+                <button id="cancelWorkOrder" , class="btn btn-danger btn-group" onclick="location.href='(@Url.Action("Cancel","Display"))'">
+                    <i class="glyphicon glyphicon-remove-sign"></i> Cancel
+                </button>
+            }
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            @Html.Action("_ReccomendationsPartial", "Recommendations", new WOHeader { customer_number = 1, job_type = 2, word_order_id = 23 })
+            @if (Session["WOHeader"] != null)
+            {
+                WOHeader WOHeader = (WOHeader)Session["WOHeader"];
+                @Html.Action("_ReccomendationsPartial", "Recommendations", new { WOHeader })
+            }
+        </div>
+
+    </div>
 </div>
+
+
