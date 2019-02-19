@@ -233,7 +233,7 @@ namespace Sched.Controllers
 
 
         }
-        public ActionResult update()
+        public ActionResult Update()
         {
             Session["Error"] = null;
             Session["Success"] = null;
@@ -827,6 +827,7 @@ namespace Sched.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+        
         /// <summary>
         /// Changes the statuses of the job crew, job and work order to dispatched
         /// returns true if successful

@@ -194,14 +194,14 @@
         </div>
     </div>
     <div class="row">
-        <form>
+   
             <button id="createWorkOrder" class="btn btn-primary btn-group" onclick="location.href = '@(Url.Action("NewWorkOrder", "Display"))'">
                 <i class="glyphicon glyphicon-plus"></i> Create
             </button>
             @*need to get workorderId*@
             @if (Session["workOrder"] != null)
             {
-                <button id="updateWorkOrder" , class="btn btn-info btn-group" onclick="location.href='@(Url.Action("Update","Display"))'">
+                <button id="updateWorkOrder" class="btn btn-info btn-group" onclick="location.href='@(Url.Action("Update","Display"))'">
                     <i class="glyphicon glyphicon-edit"> Update</i>
                 </button>
                 <button id="bookWorkOrder" , class="btn btn-info btn-group" onclick="location.href='(@Url.Action("Book","Display"))'">
@@ -211,7 +211,7 @@
                     <i class="glyphicon glyphicon-remove-sign"></i> Cancel
                 </button>
             }
-        </form>
+        
     </div>
     <div class="row">
         <div class="col-md-4">
