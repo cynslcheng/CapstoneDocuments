@@ -65,6 +65,9 @@ namespace Sched.Controllers
             SetSessionMessages("Error", "");
             return View(workOrder);
         }
+
+        
+
         /// <summary>
         /// Populates select Lists for job types, priority, and work area
         /// </summary>
@@ -437,22 +440,31 @@ namespace Sched.Controllers
         ///
         /// </summary>
         /// <returns></returns>
-        public ActionResult cancelWorkOrder()
+        public ActionResult cancelWorkOrder(string value)
         {
             SetSessionMessages("Error", "");
             SetSessionMessages("Success", "");
 
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
-            int cancelStatus = dbContext.status.Where(x => x.name.ToLower().Equals("cancelled")).FirstOrDefault().Id;
+            if (value=="Yes")
+            {
+                int cancelStatus = dbContext.status.Where(x => x.name.ToLower().Equals("cancelled")).FirstOrDefault().Id;
 
-            if (isSuccesfulCancel(workOrder, cancelStatus))
+                if (isSuccesfulCancel(workOrder, cancelStatus))
+                {
+                    SetSessionMessages("WorkOrderFormType", "");
+                    SetSessionMessages("workOrder", "");
+                    SetSessionMessages("Success", "Work Order Cancelled");
+                }
+            }
+
+            else
             {
                 SetSessionMessages("WorkOrderFormType", "");
                 SetSessionMessages("workOrder", "");
-                SetSessionMessages("Success", "Work Order Cancelled");
+                
             }
-
-
+           
             return RedirectToAction("Index", "Home");
         }
         /// <summary>
@@ -477,10 +489,10 @@ namespace Sched.Controllers
                 dbContext.SaveChanges();
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
-                throw;
+                SetSessionMessages("Error", e.Message);
             }
             return true;
         }

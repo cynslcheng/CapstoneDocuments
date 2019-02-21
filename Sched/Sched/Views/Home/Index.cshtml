@@ -23,8 +23,8 @@
         <div class="row">
             <div id="workOrderCrud" @(Session["workOrder"] != null ? "class=col-lg-4" : "")>
                 @*Work Order Crud view
-                    This uses session variables to determine which form to display and uses sessions to pass the work order model
-                    This allows the forms to remain unaffected by filters*@
+        This uses session variables to determine which form to display and uses sessions to pass the work order model
+        This allows the forms to remain unaffected by filters*@
                 @if (Session["Success"] != null)
                 {
                     <label>@Session["Success"].ToString()<br /></label>
@@ -123,12 +123,13 @@
                 else if (Session["WorkOrderFormType"].ToString() == "Cancel")
                 {
                     WorkOrder cancelWorkOrder = (WorkOrder)Session["workOrder"];
-                    <form method="post" action="@Url.Action("cancelWorkOrder","Display")">
-                        <label>Are you sure you want to delete work order: @cancelWorkOrder.Id</label>
-                        <button class="btn-blue">@Html.ActionLink("Cancel", "Index", "Home")</button>
+                        <form method="post" action="@Url.Action("cancelWorkOrder","Display")">
+                            <label>Are you sure you want to delete work order: @cancelWorkOrder.Id</label>
 
-                        <input class="form-control" type="submit" value="submit" />
-                    </form>
+                            <input class="form-control" type="submit" name="answer" value="Yes" />
+                            <input class="form-control" type="submit" name="answer" value="No" />
+                        </form>
+                   
                 }
                 else if (Session["WorkOrderFormType"].ToString() == "Create")
                 {
@@ -136,10 +137,10 @@
                     var test = Session["WorkAreaList"];
                     <form method="post" action="@Url.Action("CreateWorkOrder", "Display")">
 
-                        
+
                         <label>Earliest Start Date</label>
                         <input class="form-control" type="datetime-local" id="minimum" name="minimum" required="true" />
-                        
+
                         <label>Max Start Date<br /></label>
                         <input class="form-control" type="datetime-local" id="maximum" name="maximum" required="true" />
                         <label>job Type</label>
@@ -168,7 +169,7 @@
                             <input class="form-control" type="datetime" id="minimum" name="minimum" value="@updateWorkOrder.minimum_start_time" />
                             <label>Max Start Date<br /></label>
                             <input class="form-control" type="datetime" id="maximum" name="maximum" value="@updateWorkOrder.maximum_start_time" />
-                            
+
 
                             <label>job Type</label>
                             @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
