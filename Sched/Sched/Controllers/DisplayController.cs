@@ -293,7 +293,7 @@ namespace Sched.Controllers
                     SetSessionMessages("Success", "Work order updated!");
                     SetSessionMessages("WorkOrderFormType", "");
                     SetSessionMessages("workOrder", "");
-
+                    SetSessionMessages("WOHeader", "");
                     return RedirectToAction("Index", "Home");
                 }
                 catch (Exception e)
@@ -462,7 +462,7 @@ namespace Sched.Controllers
             {
                 SetSessionMessages("WorkOrderFormType", "");
                 SetSessionMessages("workOrder", "");
-                SetSessionMessages("WOheader", "");
+                SetSessionMessages("WOHeader", "");
                 
             }
            
