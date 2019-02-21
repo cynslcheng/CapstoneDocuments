@@ -516,7 +516,11 @@ namespace Sched.Controllers
 
             Session["Error"] = null;
             Session["Success"] = null;
-
+            if (startTime==null)
+            {
+                SetSessionMessages("Error", "Set a start time");
+                return RedirectToAction("Index", "Home");
+            }
             bool validateResource = ValidateTechnician(workOrderId, resourceId, startTime);
             if (!validateResource)
             {
@@ -632,7 +636,11 @@ namespace Sched.Controllers
         {
             SetSessionMessages("Success", "");
             SetSessionMessages("Error", "");
-
+            if (startTime==null)
+            {
+                SetSessionMessages("Error", "Set a start time");
+                return RedirectToAction("Index", "Home");
+            }
             bool validateTechnician = ValidateTechnician(workOrderId, technicianId, startTime);
             if (!validateTechnician)
             {
@@ -826,6 +834,7 @@ namespace Sched.Controllers
                     {
                         SetSessionMessages("Success", "Work order Dispatched");
                         SetSessionMessages("WorkOrder", "");
+                        SetSessionMessages("WOHeader", "");
                     }
 
                 }
