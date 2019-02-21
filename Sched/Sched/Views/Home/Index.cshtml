@@ -125,9 +125,7 @@
                     WorkOrder cancelWorkOrder = (WorkOrder)Session["workOrder"];
                     <form method="post" action="@Url.Action("cancelWorkOrder","Display")">
                         <label>Are you sure you want to delete work order: @cancelWorkOrder.Id</label>
-                        <button class="btn-blue">@Html.ActionLink("Cancel", "Index", "Home")</button>
-
-                        <input class="form-control" type="submit" value="submit" />
+                        <input class="form-control" type="submit" value="Cancel" />
                     </form>
                 }
                 else if (Session["WorkOrderFormType"].ToString() == "Create")
