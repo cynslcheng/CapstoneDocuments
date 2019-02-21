@@ -143,10 +143,10 @@ namespace Sched.Controllers
         /// <param name="postalCode"></param>
         /// <param name="estimatedTime"></param>
         /// <returns></returns>
-        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
+        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
         {
 
-            if (validateWorkOrder(minimum, maximum, street, houseNumber, postalCode, estimatedTime))
+            if (validateWorkOrder(minimum, maximum, address, postalCode, estimatedTime))
             {
                 try
                 {
@@ -155,6 +155,7 @@ namespace Sched.Controllers
                     SetSessionMessages("WorkOrderFormType", "");
                     SetSessionMessages("NewWorkOrder", "");
                     SetSessionMessages("Success", "Work order Created");
+                    successfulCreate(minimum,maximum,priority,jobType,workArea,address,postalCode,estimatedTime);
 
                 }
                 catch (Exception e)
@@ -190,7 +191,7 @@ namespace Sched.Controllers
         /// <param name="postalCode"></param>
         /// <param name="estimatedTime"></param>
         /// <returns></returns>
-        public bool successfulCreate(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
+        public bool successfulCreate(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
         {
             try
             {
@@ -203,7 +204,7 @@ namespace Sched.Controllers
                 workOrder.priority = Convert.ToInt32(priority);
                 workOrder.work_area_id = workArea;
                 workOrder.status_id = statusId;
-                workOrder.address = houseNumber + " " + street;
+                workOrder.address = address;
                 workOrder.postal_code = postalCode;
                 workOrder.estimated_time_minutes = estimatedTime;
                 //check that dates are in the future
@@ -239,7 +240,7 @@ namespace Sched.Controllers
             Session["Success"] = null;
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
             int workOrderId = workOrder.Id;
-            workOrder.postal_code = workOrder.postal_code.Replace(' ', '-');
+           
             workOrder.address = workOrder.address;
             //WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             Session["WorkOrderFormType"] = "Update";
@@ -249,15 +250,13 @@ namespace Sched.Controllers
 
             //It seems the address get's cut off when displaying in view as a whole variable
             //not sure what causes this
-            string[] addressArray = workOrder.address.Split(' ');
-            Session["HouseNumber"] = addressArray[0];
-            Session["Street"] = addressArray[1];
+
             Session["workOrder"] = workOrder;
             populateSelectList();
             return RedirectToAction("Index", "Home");
         }
 
-        public ActionResult updateWorkOrder(DateTime? minimum, DateTime? maximum, string priority, int jobType, int workArea, string street, string houseNumber, string postalCode, int estimatedTime)
+        public ActionResult updateWorkOrder(DateTime? minimum, DateTime? maximum, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
         {
             Session["Error"] = null;
             Session["Success"] = null;
@@ -283,11 +282,11 @@ namespace Sched.Controllers
             }
 
             // validateWorkOrder(minimum, maximum, priority, jobType, workArea, status, address, postalCode, estimatedTime);
-            if (validateWorkOrder(minDate, maxDate, street, houseNumber, postalCode, estimatedTime) == true)
+            if (validateWorkOrder(minDate, maxDate, address, postalCode, estimatedTime) == true)
             {
                 try
                 {
-                    successfulUpdate(oldWorkOrder.Id, minDate, maxDate, priority, jobType, workArea, street, houseNumber, postalCode, estimatedTime);
+                    successfulUpdate(oldWorkOrder.Id, minDate, maxDate, priority, jobType, workArea, address, postalCode, estimatedTime);
                     SetSessionMessages("Success", "Work order updated!");
                     SetSessionMessages("WorkOrderFormType", "");
                     SetSessionMessages("workOrder", "");
@@ -328,7 +327,7 @@ namespace Sched.Controllers
         /// <param name="postalCode"></param>
         /// <param name="estimatedTime"></param>
         /// <returns></returns>
-        public bool successfulUpdate(int id, DateTime minDate, DateTime maxDate, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
+        public bool successfulUpdate(int id, DateTime minDate, DateTime maxDate, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
         {
             try
             {
@@ -337,7 +336,7 @@ namespace Sched.Controllers
                 workOrder.maximum_start_time = maxDate;
                 workOrder.priority = Convert.ToInt32(priority);
                 workOrder.work_area_id = workArea;
-                workOrder.address = houseNumber + " " + street;
+                workOrder.address = address;
                 workOrder.postal_code = postalCode;
                 workOrder.status_id = 1;
                 workOrder.estimated_time_minutes = estimatedTime;
@@ -367,9 +366,13 @@ namespace Sched.Controllers
         /// <param name="postalCode"></param>
         /// <param name="estimatedTime"></param>
         /// <returns></returns>
-        public bool validateWorkOrder(DateTime minimum, DateTime maximum, string street, string houseNumber, string postalCode, int estimatedTime)
+        public bool validateWorkOrder(DateTime minimum, DateTime maximum, string address, string postalCode, int estimatedTime)
         {
             string validationExpression = @"^[ABCEGHJ-NPRSTVXY]{1}[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[ ]?[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[0-9]{1}$";
+            string addressValidationExpression = @"^\d+[ ](?:[A-Za-z0-9.-]+[ ]?)+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Dr|Rd|Blvd|Ln|St)\.?$";
+
+            Regex addressRegex = new Regex(addressValidationExpression, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var addressMatches = Regex.Match(address, validationExpression);
 
 
             Regex regex = new Regex(validationExpression, RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -379,10 +382,7 @@ namespace Sched.Controllers
                 Session["Error"] += "Invalid Postal Code";
                 return false;
             }
-            else
-            {
-                postalCode = postalCode.Replace('-', ' ');
-            }
+           
             if (estimatedTime < 1)
             {
                 Session["Error"] += "A job can't be less than 1 minute!<br/>";
@@ -398,21 +398,14 @@ namespace Sched.Controllers
                 Session["Error"] += "Invalid Dates<br/>";
                 return false;
             }
-            else if (minimum.Date < DateTime.Now.Date)
+           
+            if (addressRegex.IsMatch(address.Trim())==false)
             {
-                Session["Error"] += "Invalid Dates<br/>";
+                Session["Error"] += "Invalid Address";
                 return false;
             }
-            if (street.Trim() == "")
-            {
-                Session["Error"] += "Invalid street<br/>";
-                return false;
-            }
-            if (houseNumber.Trim() == "")
-            {
-                Session["Error"] += "Invalid House Number<br/>";
-                return false;
-            }
+
+           
 
             if (regex.IsMatch(postalCode.Trim()) == false)
             {
