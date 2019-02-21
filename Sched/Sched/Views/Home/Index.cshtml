@@ -123,6 +123,7 @@
                 else if (Session["WorkOrderFormType"].ToString() == "Cancel")
                 {
                     WorkOrder cancelWorkOrder = (WorkOrder)Session["workOrder"];
+
                         <form method="post" action="@Url.Action("cancelWorkOrder","Display")">
                             <label>Are you sure you want to delete work order: @cancelWorkOrder.Id</label>
 
@@ -130,6 +131,7 @@
                             <input class="form-control" type="submit" name="answer" value="No" />
                         </form>
                    
+
                 }
                 else if (Session["WorkOrderFormType"].ToString() == "Create")
                 {
