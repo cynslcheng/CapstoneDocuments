@@ -13,7 +13,7 @@ namespace Sched.Models
         public int skillId { get; set; }
         public int skillRating { get; set; }
         public DateTime expires_at { get; set; }
-        public DateTime modified_at { get; set; }
+        public Byte[] modified_at { get; set; }
 
     }
 }
