@@ -517,14 +517,13 @@ namespace Sched.Controllers
             Session["Error"] = null;
             Session["Success"] = null;
 
-            bool validateResource = ValidateTechnician(workOrderId, resourceId, startTime);
+            bool validateResource = ValidateResource(workOrderId, resourceId, startTime);
             if (!validateResource)
             {
                 Session["Error"] = "Resource already booked for this time, please try again";
                 return RedirectToAction("Index", "Home");
             }
-
-            //INSERT CALL TO CYNTHIA VALIDATION******
+            
             SetSessionMessages("Error", "");
             SetSessionMessages("Success", "");
 
@@ -560,8 +559,11 @@ namespace Sched.Controllers
                     cR.resourcesid = resourceId;
                     dbContext.crew_resources.Add(cR);
                     //int updateId = dbContext.status.Where(x => x.name == "BAPP").First().Id;
-                    workOrder.status_id = updateId;
-                    dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                    if (workOrder.status_id != updateId)
+                    {
+                        workOrder.status_id = updateId;
+                        dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                    }
                     dbContext.SaveChanges();
                 }
                 else
@@ -793,8 +795,8 @@ namespace Sched.Controllers
 
 
                 var queryResources = (from resources in dbContext.resources
-                                      join CrewResource in dbContext.crew_technician on resources.Id equals CrewResource.technicianid
-                                      join jobCrew in dbContext.jobCrew on CrewResource.crewid equals jobCrew.crewId
+                                      join CrewResource in dbContext.crew_resources on resources.Id equals CrewResource.resourcesid
+                                      join jobCrew in dbContext.jobCrew on CrewResource.crewID equals jobCrew.crewId
                                       where jobCrew.jobId == job.Id
                                       select new { resources.resource_type }).ToArray();
 
@@ -952,7 +954,7 @@ namespace Sched.Controllers
                     && rtv.jobEndTime <= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))))
                 .FirstOrDefault();
 
-            if (resourceToValidate.jobId != 0)
+            if (resourceToValidate == null)
             {
                 validate = true;
             }
