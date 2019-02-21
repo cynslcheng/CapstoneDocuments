@@ -462,6 +462,7 @@ namespace Sched.Controllers
             {
                 SetSessionMessages("WorkOrderFormType", "");
                 SetSessionMessages("workOrder", "");
+                SetSessionMessages("WOheader", "");
                 
             }
            
