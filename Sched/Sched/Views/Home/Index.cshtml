@@ -136,10 +136,10 @@
                     var test = Session["WorkAreaList"];
                     <form method="post" action="@Url.Action("CreateWorkOrder", "Display")">
 
-                        <label>Current Max start date @Session["MinDateTime"]</label>
+                        
                         <label>Earliest Start Date</label>
                         <input class="form-control" type="datetime-local" id="minimum" name="minimum" required="true" />
-                        <label>Current Max start date @Session["MaxDateTime"]</label>
+                        
                         <label>Max Start Date<br /></label>
                         <input class="form-control" type="datetime-local" id="maximum" name="maximum" required="true" />
                         <label>job Type</label>
@@ -165,10 +165,10 @@
                         WorkOrder updateWorkOrder = (WorkOrder)Session["workOrder"];
                         <form method="post" action="@Url.Action("updateWorkOrder", "Display")">
                             <label>Earliest Start Date</label>
-                            <input class="form-control" type="datetime-local" id="minimum" name="minimum" value=updateWorkOrder.minimum_start_time />
+                            <input class="form-control" type="datetime" id="minimum" name="minimum" value="@updateWorkOrder.minimum_start_time" />
                             <label>Max Start Date<br /></label>
-                            <input class="form-control" type="datetime-local" id="maximum" name="maximum" value=updateWorkOrder.maximum_start_time />
-                            <label>Current Max start date @Session["MaxDateTime"]</label>
+                            <input class="form-control" type="datetime" id="maximum" name="maximum" value="@updateWorkOrder.maximum_start_time" />
+                            
 
                             <label>job Type</label>
                             @Html.DropDownList("jobType", (IEnumerable<SelectListItem>)Session["JobSelectList"])
@@ -181,11 +181,11 @@
                             @Html.DropDownList("workArea", (IEnumerable<SelectListItem>)Session["WorkAreaList"])
 
                             <label>Address</label>
-                            <input class="form-control" type="text" id="address" name="address" value=@updateWorkOrder.address required="true" />
+                            <input class="form-control" type="text" id="address" name="address" value="@updateWorkOrder.address" required="true" />
                             <label>Postal Code</label>
-                            <input class="form-control" type="text" id="postalCode" name="postalCode" value=@(updateWorkOrder.postal_code) required="true" />
+                            <input class="form-control" type="text" id="postalCode" name="postalCode" value="@updateWorkOrder.postal_code" required="true" />
                             <label>Estimated Time</label>
-                            <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" value=@updateWorkOrder.estimated_time_minutes required="true" />
+                            <input class="form-control" type="number" id="estimatedTime" name="estimatedTime" value="@updateWorkOrder.estimated_time_minutes" required="true" />
                             <input class="form-control" type="submit" value="submit" />
 
 

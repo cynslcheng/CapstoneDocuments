@@ -119,7 +119,7 @@ namespace UnitTests
             //controller.s
             controller.successfulUpdate(userWorkOrderInputModel.Id,userWorkOrderInputModel.minimum_start_time, userWorkOrderInputModel.maximum_start_time,
                     userWorkOrderInputModel.priority.ToString(),
-                    userInputJobType, userWorkOrderInputModel.work_area_id, userInputHouseNumber, userInputStreet,
+                    userInputJobType, userWorkOrderInputModel.work_area_id, userWorkOrderInputModel.address,
                     userWorkOrderInputModel.postal_code, userWorkOrderInputModel.estimated_time_minutes);
             result = dbContext.WorkOrder.OrderByDescending(x => x.Id).First();
             //int result = dbContext.WorkOrder.Count();
