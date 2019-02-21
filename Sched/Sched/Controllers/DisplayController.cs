@@ -226,6 +226,7 @@ namespace Sched.Controllers
                 job.status_id = statusId;
                 dbContext.job.Add(job);
                 dbContext.SaveChanges();
+                SetSessionMessages("WOHeader", "");
                 return true;
             }
             catch (Exception e)
