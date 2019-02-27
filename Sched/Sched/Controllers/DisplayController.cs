@@ -65,6 +65,9 @@ namespace Sched.Controllers
             SetSessionMessages("Error", "");
             return View(workOrder);
         }
+
+        
+
         /// <summary>
         /// Populates select Lists for job types, priority, and work area
         /// </summary>
@@ -143,10 +146,10 @@ namespace Sched.Controllers
         /// <param name="postalCode"></param>
         /// <param name="estimatedTime"></param>
         /// <returns></returns>
-        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
+        public ActionResult CreateWorkOrder(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
         {
 
-            if (validateWorkOrder(minimum, maximum, street, houseNumber, postalCode, estimatedTime))
+            if (validateWorkOrder(minimum, maximum, address, postalCode, estimatedTime))
             {
                 try
                 {
@@ -155,6 +158,7 @@ namespace Sched.Controllers
                     SetSessionMessages("WorkOrderFormType", "");
                     SetSessionMessages("NewWorkOrder", "");
                     SetSessionMessages("Success", "Work order Created");
+                    successfulCreate(minimum,maximum,priority,jobType,workArea,address,postalCode,estimatedTime);
 
                 }
                 catch (Exception e)
@@ -190,7 +194,7 @@ namespace Sched.Controllers
         /// <param name="postalCode"></param>
         /// <param name="estimatedTime"></param>
         /// <returns></returns>
-        public bool successfulCreate(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
+        public bool successfulCreate(DateTime minimum, DateTime maximum, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
         {
             try
             {
@@ -203,7 +207,7 @@ namespace Sched.Controllers
                 workOrder.priority = Convert.ToInt32(priority);
                 workOrder.work_area_id = workArea;
                 workOrder.status_id = statusId;
-                workOrder.address = houseNumber + " " + street;
+                workOrder.address = address;
                 workOrder.postal_code = postalCode;
                 workOrder.estimated_time_minutes = estimatedTime;
                 //check that dates are in the future
@@ -222,6 +226,7 @@ namespace Sched.Controllers
                 job.status_id = statusId;
                 dbContext.job.Add(job);
                 dbContext.SaveChanges();
+                SetSessionMessages("WOHeader", "");
                 return true;
             }
             catch (Exception e)
@@ -239,7 +244,7 @@ namespace Sched.Controllers
             Session["Success"] = null;
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
             int workOrderId = workOrder.Id;
-            workOrder.postal_code = workOrder.postal_code.Replace(' ', '-');
+           
             workOrder.address = workOrder.address;
             //WorkOrder workOrder = dbContext.WorkOrder.Where(x => x.Id == workOrderId).First();
             Session["WorkOrderFormType"] = "Update";
@@ -249,15 +254,13 @@ namespace Sched.Controllers
 
             //It seems the address get's cut off when displaying in view as a whole variable
             //not sure what causes this
-            string[] addressArray = workOrder.address.Split(' ');
-            Session["HouseNumber"] = addressArray[0];
-            Session["Street"] = addressArray[1];
+
             Session["workOrder"] = workOrder;
             populateSelectList();
             return RedirectToAction("Index", "Home");
         }
 
-        public ActionResult updateWorkOrder(DateTime? minimum, DateTime? maximum, string priority, int jobType, int workArea, string street, string houseNumber, string postalCode, int estimatedTime)
+        public ActionResult updateWorkOrder(DateTime? minimum, DateTime? maximum, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
         {
             Session["Error"] = null;
             Session["Success"] = null;
@@ -283,15 +286,15 @@ namespace Sched.Controllers
             }
 
             // validateWorkOrder(minimum, maximum, priority, jobType, workArea, status, address, postalCode, estimatedTime);
-            if (validateWorkOrder(minDate, maxDate, street, houseNumber, postalCode, estimatedTime) == true)
+            if (validateWorkOrder(minDate, maxDate, address, postalCode, estimatedTime) == true)
             {
                 try
                 {
-                    successfulUpdate(oldWorkOrder.Id, minDate, maxDate, priority, jobType, workArea, street, houseNumber, postalCode, estimatedTime);
+                    successfulUpdate(oldWorkOrder.Id, minDate, maxDate, priority, jobType, workArea, address, postalCode, estimatedTime);
                     SetSessionMessages("Success", "Work order updated!");
                     SetSessionMessages("WorkOrderFormType", "");
                     SetSessionMessages("workOrder", "");
-
+                    SetSessionMessages("WOHeader", "");
                     return RedirectToAction("Index", "Home");
                 }
                 catch (Exception e)
@@ -328,7 +331,7 @@ namespace Sched.Controllers
         /// <param name="postalCode"></param>
         /// <param name="estimatedTime"></param>
         /// <returns></returns>
-        public bool successfulUpdate(int id, DateTime minDate, DateTime maxDate, string priority, int jobType, int workArea, string houseNumber, string street, string postalCode, int estimatedTime)
+        public bool successfulUpdate(int id, DateTime minDate, DateTime maxDate, string priority, int jobType, int workArea, string address, string postalCode, int estimatedTime)
         {
             try
             {
@@ -337,7 +340,7 @@ namespace Sched.Controllers
                 workOrder.maximum_start_time = maxDate;
                 workOrder.priority = Convert.ToInt32(priority);
                 workOrder.work_area_id = workArea;
-                workOrder.address = houseNumber + " " + street;
+                workOrder.address = address;
                 workOrder.postal_code = postalCode;
                 workOrder.status_id = 1;
                 workOrder.estimated_time_minutes = estimatedTime;
@@ -367,9 +370,13 @@ namespace Sched.Controllers
         /// <param name="postalCode"></param>
         /// <param name="estimatedTime"></param>
         /// <returns></returns>
-        public bool validateWorkOrder(DateTime minimum, DateTime maximum, string street, string houseNumber, string postalCode, int estimatedTime)
+        public bool validateWorkOrder(DateTime minimum, DateTime maximum, string address, string postalCode, int estimatedTime)
         {
             string validationExpression = @"^[ABCEGHJ-NPRSTVXY]{1}[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[ ]?[0-9]{1}[ABCEGHJ-NPRSTV-Z]{1}[0-9]{1}$";
+            string addressValidationExpression = @"^\d+[ ](?:[A-Za-z0-9.-]+[ ]?)+(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Dr|Rd|Blvd|Ln|St)\.?$";
+
+            Regex addressRegex = new Regex(addressValidationExpression, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            var addressMatches = Regex.Match(address, validationExpression);
 
 
             Regex regex = new Regex(validationExpression, RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -379,10 +386,7 @@ namespace Sched.Controllers
                 Session["Error"] += "Invalid Postal Code";
                 return false;
             }
-            else
-            {
-                postalCode = postalCode.Replace('-', ' ');
-            }
+           
             if (estimatedTime < 1)
             {
                 Session["Error"] += "A job can't be less than 1 minute!<br/>";
@@ -398,21 +402,14 @@ namespace Sched.Controllers
                 Session["Error"] += "Invalid Dates<br/>";
                 return false;
             }
-            else if (minimum.Date < DateTime.Now.Date)
+           
+            if (addressRegex.IsMatch(address.Trim())==false)
             {
-                Session["Error"] += "Invalid Dates<br/>";
+                Session["Error"] += "Invalid Address";
                 return false;
             }
-            if (street.Trim() == "")
-            {
-                Session["Error"] += "Invalid street<br/>";
-                return false;
-            }
-            if (houseNumber.Trim() == "")
-            {
-                Session["Error"] += "Invalid House Number<br/>";
-                return false;
-            }
+
+           
 
             if (regex.IsMatch(postalCode.Trim()) == false)
             {
@@ -444,22 +441,32 @@ namespace Sched.Controllers
         ///
         /// </summary>
         /// <returns></returns>
-        public ActionResult cancelWorkOrder()
+        public ActionResult cancelWorkOrder(string value)
         {
             SetSessionMessages("Error", "");
             SetSessionMessages("Success", "");
 
             WorkOrder workOrder = (WorkOrder)Session["workOrder"];
-            int cancelStatus = dbContext.status.Where(x => x.name.ToLower().Equals("cancelled")).FirstOrDefault().Id;
+            if (value=="Yes")
+            {
+                int cancelStatus = dbContext.status.Where(x => x.name.ToLower().Equals("cancelled")).FirstOrDefault().Id;
 
-            if (isSuccesfulCancel(workOrder, cancelStatus))
+                if (isSuccesfulCancel(workOrder, cancelStatus))
+                {
+                    SetSessionMessages("WorkOrderFormType", "");
+                    SetSessionMessages("workOrder", "");
+                    SetSessionMessages("Success", "Work Order Cancelled");
+                }
+            }
+
+            else
             {
                 SetSessionMessages("WorkOrderFormType", "");
                 SetSessionMessages("workOrder", "");
-                SetSessionMessages("Success", "Work Order Cancelled");
+                SetSessionMessages("WOHeader", "");
+                
             }
-
-
+           
             return RedirectToAction("Index", "Home");
         }
         /// <summary>
@@ -484,10 +491,10 @@ namespace Sched.Controllers
                 dbContext.SaveChanges();
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
-                throw;
+                SetSessionMessages("Error", e.Message);
             }
             return true;
         }
@@ -509,15 +516,18 @@ namespace Sched.Controllers
 
             Session["Error"] = null;
             Session["Success"] = null;
-
+            if (startTime==null)
+            {
+                SetSessionMessages("Error", "Set a start time");
+                return RedirectToAction("Index", "Home");
+            }
             bool validateResource = ValidateTechnician(workOrderId, resourceId, startTime);
             if (!validateResource)
             {
                 Session["Error"] = "Resource already booked for this time, please try again";
                 return RedirectToAction("Index", "Home");
             }
-
-            //INSERT CALL TO CYNTHIA VALIDATION******
+            
             SetSessionMessages("Error", "");
             SetSessionMessages("Success", "");
 
@@ -553,8 +563,11 @@ namespace Sched.Controllers
                     cR.resourcesid = resourceId;
                     dbContext.crew_resources.Add(cR);
                     //int updateId = dbContext.status.Where(x => x.name == "BAPP").First().Id;
-                    workOrder.status_id = updateId;
-                    dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                    if (workOrder.status_id != updateId)
+                    {
+                        workOrder.status_id = updateId;
+                        dbContext.Entry(workOrder).State = System.Data.Entity.EntityState.Modified;
+                    }
                     dbContext.SaveChanges();
                 }
                 else
@@ -625,7 +638,11 @@ namespace Sched.Controllers
         {
             SetSessionMessages("Success", "");
             SetSessionMessages("Error", "");
-
+            if (startTime==null)
+            {
+                SetSessionMessages("Error", "Set a start time");
+                return RedirectToAction("Index", "Home");
+            }
             bool validateTechnician = ValidateTechnician(workOrderId, technicianId, startTime);
             if (!validateTechnician)
             {
@@ -786,8 +803,8 @@ namespace Sched.Controllers
 
 
                 var queryResources = (from resources in dbContext.resources
-                                      join CrewResource in dbContext.crew_technician on resources.Id equals CrewResource.technicianid
-                                      join jobCrew in dbContext.jobCrew on CrewResource.crewid equals jobCrew.crewId
+                                      join CrewResource in dbContext.crew_resources on resources.Id equals CrewResource.resourcesid
+                                      join jobCrew in dbContext.jobCrew on CrewResource.crewID equals jobCrew.crewId
                                       where jobCrew.jobId == job.Id
                                       select new { resources.resource_type }).ToArray();
 
@@ -819,6 +836,7 @@ namespace Sched.Controllers
                     {
                         SetSessionMessages("Success", "Work order Dispatched");
                         SetSessionMessages("WorkOrder", "");
+                        SetSessionMessages("WOHeader", "");
                     }
 
                 }
@@ -945,7 +963,7 @@ namespace Sched.Controllers
                     && rtv.jobEndTime <= requestedStartTime.AddMinutes(rtv.estimatedJobTimeMinutes))))
                 .FirstOrDefault();
 
-            if (resourceToValidate.jobId != 0)
+            if (resourceToValidate == null)
             {
                 validate = true;
             }
